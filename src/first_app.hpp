@@ -1,5 +1,6 @@
 #pragma once
 
+#include "va_pipeline.hpp"
 #include "va_window.hpp"
 
 namespace va {
@@ -13,5 +14,7 @@ public:
 
 private:
   VaWindow vaWindow{WIDTH, HEIGHT, "helloworld"};
+  VaPipeline vaPipeline{"shaders/simple_shader.vert.spv",
+             "shaders/simple_shader.frag.spv"};
 };
 } // namespace va
