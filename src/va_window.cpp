@@ -1,5 +1,7 @@
 #include "va_window.hpp"
 
+#include <stdexcept>
+
 namespace va {
 
 VaWindow::VaWindow(int w, int h, std::string name)
@@ -20,4 +22,10 @@ void VaWindow::initWindow() {
   window =
       glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 }
+
+  void VaWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface){
+    if(glfwCreateWindowSurface(instance, window, nullptr, surface)!=VK_SUCCESS) {
+      throw std::runtime_error("failed to create window surface");
+    }
+  }
 } // namespace va
