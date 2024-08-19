@@ -14,6 +14,13 @@ public:
   VaWindow(const VaWindow &) = delete;
   VaWindow &operator=(const VaWindow &) = delete;
 
+  VkExtent2D getExtent() {
+    return {
+      static_cast<uint32_t>(width),
+      static_cast<uint32_t>(height)
+    };
+  }
+
   bool shouldClose() { return glfwWindowShouldClose(window); }
 
   void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);

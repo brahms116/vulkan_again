@@ -11,10 +11,8 @@ VaPipeline::VaPipeline(VaDevice &device,
                        const std::string &fragmentShaderFilePath,
                        const PipelineConfigInfo &configInfo)
     : vaDevice{device} {
-  PipelineConfigInfo defaultPipelineConfigInfo{};
-  setDefaultPipelineConfigInfo(defaultPipelineConfigInfo, 800, 600);
   createGraphicsPipeline(vertexShaderFilePath, fragmentShaderFilePath,
-                         defaultPipelineConfigInfo);
+                         configInfo);
 }
 
 VaPipeline::~VaPipeline() {

@@ -349,7 +349,7 @@ QueueFamilyIndices VaDevice::findQueueFamilies(VkPhysicalDevice device) {
 }
 
 SwapChainSupportDetails VaDevice::querySwapChainSupport(VkPhysicalDevice device) {
-  SwapChainSupportDetails details;
+  SwapChainSupportDetails details{};
   vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface_, &details.capabilities);
 
   uint32_t formatCount;

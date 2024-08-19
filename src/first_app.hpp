@@ -2,7 +2,10 @@
 
 #include "va_engine_device.hpp"
 #include "va_pipeline.hpp"
+#include "va_swap_chain.hpp"
 #include "va_window.hpp"
+
+#include <memory>
 
 namespace va {
 
@@ -11,12 +14,27 @@ public:
   static constexpr int WIDTH = 800;
   static constexpr int HEIGHT = 600;
 
+  FirstApp();
+  ~FirstApp();
+
+  FirstApp(const FirstApp &) = delete;
+  void operator=(const FirstApp &) = delete;
+
   void run();
 
 private:
+  void createPipelineLayout();
+  void createPipeline();
+  void createCommandBuffers();
+
+  void drawFrame();
+
   VaWindow vaWindow{WIDTH, HEIGHT, "helloworld"};
   VaDevice vaDevice{vaWindow};
-  VaPipeline vaPipeline{vaDevice, "shaders/simple_shader.vert.spv",
-                        "shaders/simple_shader.frag.spv", PipelineConfigInfo{}};
+  VaSwapChain vaSwapChain{vaDevice, vaWindow.getExtent()};
+
+  std::unique_ptr<VaPipeline> vaPipeline;
+  VkPipelineLayout pipelineLayout;
+  std::vector<VkCommandBuffer> commandBuffers;
 };
 } // namespace va
