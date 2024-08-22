@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include <array>
+
 namespace va {
 
 FirstApp::FirstApp() {
@@ -14,13 +16,79 @@ FirstApp::~FirstApp() {
   vkDestroyPipelineLayout(vaDevice.device(), pipelineLayout, nullptr);
 }
 
-void FirstApp::drawFrame() {}
+void FirstApp::drawFrame() {
+  uint32_t imageIndex;
+  VkResult result = vaSwapChain.acquireNextImage(&imageIndex);
 
-void FirstApp::createCommandBuffers() {}
+  if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+    throw std::runtime_error("Failed to acquire next image");
+  }
+
+  result = vaSwapChain.submitCommandBuffers(&commandBuffers[imageIndex],
+                                            &imageIndex);
+  if (result != VK_SUCCESS) {
+    throw std::runtime_error("Failed to submit command buffer");
+  }
+}
+
+void FirstApp::createCommandBuffers() {
+  commandBuffers.resize(vaSwapChain.imageCount());
+
+  VkCommandBufferAllocateInfo allocInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = vaDevice.getCommandPool(),
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = static_cast<uint32_t>(commandBuffers.size()),
+  };
+
+  if (vkAllocateCommandBuffers(vaDevice.device(), &allocInfo,
+                               commandBuffers.data()) != VK_SUCCESS) {
+    throw std::runtime_error("failed to allocate command buffers!");
+  }
+
+  for (int i = 0; i < commandBuffers.size(); i++) {
+
+    VkCommandBufferBeginInfo beginInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    };
+
+    if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+      throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {0.1f, 0.1f, 0.1f, 1.0f};
+    clearValues[1].depthStencil = {1.0f, 0};
+
+    VkRenderPassBeginInfo renderPassInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .renderPass = vaSwapChain.getRenderPass(),
+        .framebuffer = vaSwapChain.getFrameBuffer(i),
+        .renderArea = {.offset = {0, 0},
+                       .extent = vaSwapChain.getSwapChainExtent()},
+        .clearValueCount = static_cast<uint32_t>(clearValues.size()),
+        .pClearValues = clearValues.data(),
+    };
+
+    vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo,
+                         VK_SUBPASS_CONTENTS_INLINE);
+
+    vaPipeline->bindCommandBuffer(commandBuffers[i]);
+    vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+    vkCmdEndRenderPass(commandBuffers[i]);
+    if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+      throw std::runtime_error("failed to record command buffer!");
+    }
+  }
+}
 
 void FirstApp::run() {
   while (!vaWindow.shouldClose()) {
     glfwPollEvents();
+    drawFrame();
+
+    vkDeviceWaitIdle(vaDevice.device());
   }
 }
 

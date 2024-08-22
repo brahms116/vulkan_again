@@ -39,6 +39,8 @@ public:
   VaPipeline(const VaPipeline &) = delete;
   void operator=(const VaPipeline &) = delete;
 
+  void bindCommandBuffer(VkCommandBuffer commandBuffer);
+
   static void setDefaultPipelineConfigInfo(PipelineConfigInfo &configInfo,
                                            uint32_t width, uint32_t height);
 

@@ -21,6 +21,11 @@ VaPipeline::~VaPipeline() {
   vkDestroyPipeline(vaDevice.device(), graphicsPipeline, nullptr);
 }
 
+void VaPipeline::bindCommandBuffer(VkCommandBuffer commandBuffer) {
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    graphicsPipeline);
+}
+
 std::vector<char> VaPipeline::readFile(const std::string &filePath) {
 
   std::ifstream file{filePath, std::ios::ate | std::ios::binary};
