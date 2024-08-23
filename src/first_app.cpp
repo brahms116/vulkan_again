@@ -7,6 +7,7 @@
 namespace va {
 
 FirstApp::FirstApp() {
+  loadModels();
   createPipelineLayout();
   createPipeline();
   createCommandBuffers();
@@ -29,6 +30,16 @@ void FirstApp::drawFrame() {
   if (result != VK_SUCCESS) {
     throw std::runtime_error("Failed to submit command buffer");
   }
+}
+
+void FirstApp::loadModels() {
+  std::vector<VaModel::Vertex> vertices{
+      {{0.0f, -0.5f}},
+      {{0.5f, 0.5f}},
+      {{-0.5f, 0.5f}},
+  };
+
+  vaModel = std::make_unique<VaModel>(vaDevice, vertices);
 }
 
 void FirstApp::createCommandBuffers() {
@@ -74,7 +85,8 @@ void FirstApp::createCommandBuffers() {
                          VK_SUBPASS_CONTENTS_INLINE);
 
     vaPipeline->bindCommandBuffer(commandBuffers[i]);
-    vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+    vaModel->bindCommandBuffer(commandBuffers[i]);
+    vaModel->draw(commandBuffers[i]);
 
     vkCmdEndRenderPass(commandBuffers[i]);
     if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {

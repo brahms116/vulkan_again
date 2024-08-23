@@ -2,6 +2,7 @@
 #include "va_model.hpp"
 #include <cassert>
 #include <cstring>
+#include <vulkan/vulkan_core.h>
 
 namespace va {
 
@@ -14,6 +15,37 @@ VaModel::~VaModel() {
   vkDestroyBuffer(vaDevice.device(), vertexBuffer, nullptr);
   vkFreeMemory(vaDevice.device(), vertexBufferMemory, nullptr);
 };
+
+void VaModel::bindCommandBuffer(VkCommandBuffer commandBuffer) {
+  VkBuffer buffers[] = {vertexBuffer};
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+}
+
+void VaModel::draw(VkCommandBuffer commandBuffer) {
+  vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+}
+
+std::vector<VkVertexInputBindingDescription>
+VaModel::Vertex::getBindingDescriptions() {
+  std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+  bindingDescriptions[0].binding = 0;
+  bindingDescriptions[0].stride = sizeof(Vertex);
+  bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+  return bindingDescriptions;
+}
+
+std::vector<VkVertexInputAttributeDescription>
+VaModel::Vertex::getAttributeDescriptions() {
+  std::vector<VkVertexInputAttributeDescription> attributeDescriptions(1);
+  attributeDescriptions[0].binding = 0;
+  attributeDescriptions[0].location = 0;
+  attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+  attributeDescriptions[0].offset = 0;
+  return attributeDescriptions;
+}
+
 void VaModel::createVertexBuffer(const std::vector<Vertex> &vertices) {
   vertexCount = static_cast<uint32_t>(vertices.size());
   assert(vertexCount >= 3 && "Vertex count must be at least 3");

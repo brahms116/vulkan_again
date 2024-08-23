@@ -1,6 +1,7 @@
 #pragma once
 
 #include "va_engine_device.hpp"
+#include "va_model.hpp"
 #include "va_pipeline.hpp"
 #include "va_swap_chain.hpp"
 #include "va_window.hpp"
@@ -23,6 +24,7 @@ public:
   void run();
 
 private:
+  void loadModels();
   void createPipelineLayout();
   void createPipeline();
   void createCommandBuffers();
@@ -36,5 +38,7 @@ private:
   std::unique_ptr<VaPipeline> vaPipeline;
   VkPipelineLayout pipelineLayout;
   std::vector<VkCommandBuffer> commandBuffers;
+  std::unique_ptr<VaModel> vaModel;
+
 };
 } // namespace va
