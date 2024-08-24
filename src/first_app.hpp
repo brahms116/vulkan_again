@@ -19,7 +19,7 @@ public:
   ~FirstApp();
 
   FirstApp(const FirstApp &) = delete;
-  void operator=(const FirstApp &) = delete;
+  FirstApp &operator=(const FirstApp &) = delete;
 
   void run();
 
@@ -39,6 +39,5 @@ private:
   VkPipelineLayout pipelineLayout;
   std::vector<VkCommandBuffer> commandBuffers;
   std::unique_ptr<VaModel> vaModel;
-
 };
 } // namespace va

@@ -12,7 +12,7 @@ struct PipelineConfigInfo {
   void operator=(const PipelineConfigInfo &other) = delete;
 
   PipelineConfigInfo(PipelineConfigInfo &&) = delete;
-  void operator=(const PipelineConfigInfo &&other) = delete;
+  PipelineConfigInfo &operator=(const PipelineConfigInfo &&other) = delete;
 
   VkViewport viewport;
   VkRect2D scissor;

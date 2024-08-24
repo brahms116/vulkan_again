@@ -34,9 +34,9 @@ void FirstApp::drawFrame() {
 
 void FirstApp::loadModels() {
   std::vector<VaModel::Vertex> vertices{
-      {{0.0f, -0.5f}},
-      {{0.5f, 0.5f}},
-      {{-0.5f, 0.5f}},
+      {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+      {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+      {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
   };
 
   vaModel = std::make_unique<VaModel>(vaDevice, vertices);
