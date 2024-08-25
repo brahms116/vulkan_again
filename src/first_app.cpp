@@ -56,6 +56,13 @@ void FirstApp::loadModels() {
   vaModel = std::make_unique<VaModel>(vaDevice, vertices);
 }
 
+void FirstApp::freeCommandBuffers() {
+  vkFreeCommandBuffers(vaDevice.device(), vaDevice.getCommandPool(),
+                       static_cast<uint32_t>(commandBuffers.size()),
+                       commandBuffers.data());
+  commandBuffers.clear();
+}
+
 void FirstApp::recreateSwapChain() {
   auto extent = vaWindow.getExtent();
 
@@ -65,8 +72,16 @@ void FirstApp::recreateSwapChain() {
   }
 
   vkDeviceWaitIdle(vaDevice.device());
-  vaSwapChain = nullptr;
-  vaSwapChain = std::make_unique<VaSwapChain>(vaDevice, extent);
+  if (vaSwapChain == nullptr) {
+    vaSwapChain = std::make_unique<VaSwapChain>(vaDevice, extent);
+  } else {
+    vaSwapChain =
+        std::make_unique<VaSwapChain>(vaDevice, extent, std::move(vaSwapChain));
+    if (vaSwapChain->imageCount() != commandBuffers.size()) {
+      freeCommandBuffers();
+      createCommandBuffers();
+    }
+  }
   createPipeline();
 }
 
