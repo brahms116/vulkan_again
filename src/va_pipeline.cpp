@@ -101,7 +101,7 @@ void VaPipeline::createGraphicsPipeline(
       .pMultisampleState = &configInfo.multisampleInfo,
       .pDepthStencilState = &configInfo.depthStencilInfo,
       .pColorBlendState = &configInfo.colorBlendInfo,
-      .pDynamicState = nullptr,
+      .pDynamicState = &configInfo.dynamicStateInfo,
       .layout = configInfo.pipelineLayout,
       .renderPass = configInfo.renderPass,
       .subpass = configInfo.subpass,
@@ -129,29 +129,19 @@ void VaPipeline::createShaderModule(const std::vector<char> &code,
   }
 }
 
-void VaPipeline::setDefaultPipelineConfigInfo(PipelineConfigInfo &configInfo,
-                                              uint32_t width, uint32_t height) {
+void VaPipeline::setDefaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
 
   configInfo.inputAssemblyInfo = VkPipelineInputAssemblyStateCreateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
       .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
       .primitiveRestartEnable = VK_FALSE};
 
-  configInfo.viewport = VkViewport{.x = 0.0f,
-                                   .y = 0.0f,
-                                   .width = static_cast<float>(width),
-                                   .height = static_cast<float>(height),
-                                   .minDepth = 0.0f,
-                                   .maxDepth = 1.0f};
-
-  configInfo.scissor = VkRect2D{.offset = {0, 0}, .extent{width, height}};
-
   configInfo.viewportInfo = VkPipelineViewportStateCreateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
       .viewportCount = 1,
-      .pViewports = &configInfo.viewport,
+      .pViewports = nullptr,
       .scissorCount = 1,
-      .pScissors = &configInfo.scissor};
+      .pScissors = nullptr};
 
   configInfo.rasterizationInfo = VkPipelineRasterizationStateCreateInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
@@ -207,5 +197,15 @@ void VaPipeline::setDefaultPipelineConfigInfo(PipelineConfigInfo &configInfo,
   configInfo.depthStencilInfo.stencilTestEnable = VK_FALSE;
   configInfo.depthStencilInfo.front = {}; // Optional
   configInfo.depthStencilInfo.back = {};  // Optional
+
+  configInfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT,
+                                    VK_DYNAMIC_STATE_SCISSOR};
+  configInfo.dynamicStateInfo.sType =
+      VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+  configInfo.dynamicStateInfo.pDynamicStates =
+      configInfo.dynamicStateEnables.data();
+  configInfo.dynamicStateInfo.dynamicStateCount =
+      static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
+  configInfo.dynamicStateInfo.flags = 0;
 }
 } // namespace va

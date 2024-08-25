@@ -97,6 +97,19 @@ void FirstApp::recordCommandBuffer(int imageIndex) {
   vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassInfo,
                        VK_SUBPASS_CONTENTS_INLINE);
 
+  VkViewport viewport = {};
+  viewport.x = 0.0f;
+  viewport.y = 0.0f;
+  viewport.width = static_cast<float>(vaSwapChain->getSwapChainExtent().width);
+  viewport.height =
+      static_cast<float>(vaSwapChain->getSwapChainExtent().height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  VkRect2D scisscor{{0, 0}, vaSwapChain->getSwapChainExtent()};
+
+  vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
+  vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scisscor);
+
   vaPipeline->bindCommandBuffer(commandBuffers[imageIndex]);
   vaModel->bindCommandBuffer(commandBuffers[imageIndex]);
   vaModel->draw(commandBuffers[imageIndex]);
@@ -148,8 +161,7 @@ void FirstApp::createPipelineLayout() {
 
 void FirstApp::createPipeline() {
   PipelineConfigInfo configInfo{};
-  VaPipeline::setDefaultPipelineConfigInfo(configInfo, vaSwapChain->width(),
-                                           vaSwapChain->height());
+  VaPipeline::setDefaultPipelineConfigInfo(configInfo);
   configInfo.renderPass = vaSwapChain->getRenderPass();
   configInfo.pipelineLayout = pipelineLayout;
   vaPipeline = std::make_unique<VaPipeline>(

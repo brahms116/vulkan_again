@@ -9,13 +9,11 @@ namespace va {
 
 struct PipelineConfigInfo {
   PipelineConfigInfo(const PipelineConfigInfo &) = delete;
-  void operator=(const PipelineConfigInfo &other) = delete;
+  PipelineConfigInfo &operator=(const PipelineConfigInfo &other) = delete;
 
   PipelineConfigInfo(PipelineConfigInfo &&) = delete;
   PipelineConfigInfo &operator=(const PipelineConfigInfo &&other) = delete;
 
-  VkViewport viewport;
-  VkRect2D scissor;
   VkPipelineViewportStateCreateInfo viewportInfo;
   VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
   VkPipelineRasterizationStateCreateInfo rasterizationInfo;
@@ -26,6 +24,9 @@ struct PipelineConfigInfo {
   VkPipelineLayout pipelineLayout = nullptr;
   VkRenderPass renderPass = nullptr;
   uint32_t subpass = 0;
+
+  std::vector<VkDynamicState> dynamicStateEnables;
+  VkPipelineDynamicStateCreateInfo dynamicStateInfo;
 };
 
 class VaPipeline {
@@ -41,8 +42,7 @@ public:
 
   void bindCommandBuffer(VkCommandBuffer commandBuffer);
 
-  static void setDefaultPipelineConfigInfo(PipelineConfigInfo &configInfo,
-                                           uint32_t width, uint32_t height);
+  static void setDefaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
 
 private:
   static std::vector<char> readFile(const std::string &filePath);
