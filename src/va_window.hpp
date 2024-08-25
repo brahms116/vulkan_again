@@ -14,11 +14,12 @@ public:
   VaWindow(const VaWindow &) = delete;
   VaWindow &operator=(const VaWindow &) = delete;
 
+  bool wasWindowResized() { return frameBufferResized; };
+
+  void resetWindowResizedFlag() { frameBufferResized = false; };
+
   VkExtent2D getExtent() {
-    return {
-      static_cast<uint32_t>(width),
-      static_cast<uint32_t>(height)
-    };
+    return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
   }
 
   bool shouldClose() { return glfwWindowShouldClose(window); }
@@ -28,9 +29,13 @@ public:
 private:
   GLFWwindow *window;
 
+  bool frameBufferResized = false;
+
+  static void onWindowResized(GLFWwindow *pointer, int width, int height);
+
   void initWindow();
-  const int width;
-  const int height;
+  int width;
+  int height;
 
   std::string windowName;
 };

@@ -19,7 +19,7 @@ public:
   ~VaSwapChain();
 
   VaSwapChain(const VaSwapChain &) = delete;
-  void operator=(const VaSwapChain &) = delete;
+  VaSwapChain &operator=(const VaSwapChain &) = delete;
 
   VkFramebuffer getFrameBuffer(int index) {
     return swapChainFramebuffers[index];

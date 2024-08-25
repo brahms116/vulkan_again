@@ -28,13 +28,15 @@ private:
   void createPipelineLayout();
   void createPipeline();
   void createCommandBuffers();
+  void recreateSwapChain();
+  void recordCommandBuffer(int imageIndex);
 
   void drawFrame();
 
   VaWindow vaWindow{WIDTH, HEIGHT, "helloworld"};
   VaDevice vaDevice{vaWindow};
-  VaSwapChain vaSwapChain{vaDevice, vaWindow.getExtent()};
 
+  std::unique_ptr<VaSwapChain> vaSwapChain;
   std::unique_ptr<VaPipeline> vaPipeline;
   VkPipelineLayout pipelineLayout;
   std::vector<VkCommandBuffer> commandBuffers;

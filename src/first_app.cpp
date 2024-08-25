@@ -9,7 +9,7 @@ namespace va {
 FirstApp::FirstApp() {
   loadModels();
   createPipelineLayout();
-  createPipeline();
+  recreateSwapChain();
   createCommandBuffers();
 }
 
@@ -19,14 +19,28 @@ FirstApp::~FirstApp() {
 
 void FirstApp::drawFrame() {
   uint32_t imageIndex;
-  VkResult result = vaSwapChain.acquireNextImage(&imageIndex);
+  VkResult result = vaSwapChain->acquireNextImage(&imageIndex);
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+    recreateSwapChain();
+    return;
+  }
 
   if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     throw std::runtime_error("Failed to acquire next image");
   }
 
-  result = vaSwapChain.submitCommandBuffers(&commandBuffers[imageIndex],
-                                            &imageIndex);
+  recordCommandBuffer(imageIndex);
+  result = vaSwapChain->submitCommandBuffers(&commandBuffers[imageIndex],
+                                             &imageIndex);
+
+  if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
+      vaWindow.wasWindowResized()) {
+    vaWindow.resetWindowResizedFlag();
+
+    recreateSwapChain();
+    return;
+  }
   if (result != VK_SUCCESS) {
     throw std::runtime_error("Failed to submit command buffer");
   }
@@ -42,8 +56,59 @@ void FirstApp::loadModels() {
   vaModel = std::make_unique<VaModel>(vaDevice, vertices);
 }
 
+void FirstApp::recreateSwapChain() {
+  auto extent = vaWindow.getExtent();
+
+  while (extent.width == 0 || extent.height == 0) {
+    extent = vaWindow.getExtent();
+    glfwPollEvents();
+  }
+
+  vkDeviceWaitIdle(vaDevice.device());
+  vaSwapChain = nullptr;
+  vaSwapChain = std::make_unique<VaSwapChain>(vaDevice, extent);
+  createPipeline();
+}
+
+void FirstApp::recordCommandBuffer(int imageIndex) {
+  VkCommandBufferBeginInfo beginInfo{
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+  };
+
+  if (vkBeginCommandBuffer(commandBuffers[imageIndex], &beginInfo) !=
+      VK_SUCCESS) {
+    throw std::runtime_error("failed to begin recording command buffer!");
+  }
+
+  std::array<VkClearValue, 2> clearValues{};
+  clearValues[0].color = {0.1f, 0.1f, 0.1f, 1.0f};
+  clearValues[1].depthStencil = {1.0f, 0};
+
+  VkRenderPassBeginInfo renderPassInfo{
+      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      .renderPass = vaSwapChain->getRenderPass(),
+      .framebuffer = vaSwapChain->getFrameBuffer(imageIndex),
+      .renderArea = {.offset = {0, 0},
+                     .extent = vaSwapChain->getSwapChainExtent()},
+      .clearValueCount = static_cast<uint32_t>(clearValues.size()),
+      .pClearValues = clearValues.data(),
+  };
+
+  vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassInfo,
+                       VK_SUBPASS_CONTENTS_INLINE);
+
+  vaPipeline->bindCommandBuffer(commandBuffers[imageIndex]);
+  vaModel->bindCommandBuffer(commandBuffers[imageIndex]);
+  vaModel->draw(commandBuffers[imageIndex]);
+
+  vkCmdEndRenderPass(commandBuffers[imageIndex]);
+  if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) {
+    throw std::runtime_error("failed to record command buffer!");
+  }
+}
+
 void FirstApp::createCommandBuffers() {
-  commandBuffers.resize(vaSwapChain.imageCount());
+  commandBuffers.resize(vaSwapChain->imageCount());
 
   VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -55,43 +120,6 @@ void FirstApp::createCommandBuffers() {
   if (vkAllocateCommandBuffers(vaDevice.device(), &allocInfo,
                                commandBuffers.data()) != VK_SUCCESS) {
     throw std::runtime_error("failed to allocate command buffers!");
-  }
-
-  for (int i = 0; i < commandBuffers.size(); i++) {
-
-    VkCommandBufferBeginInfo beginInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-    };
-
-    if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-      throw std::runtime_error("failed to begin recording command buffer!");
-    }
-
-    std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {0.1f, 0.1f, 0.1f, 1.0f};
-    clearValues[1].depthStencil = {1.0f, 0};
-
-    VkRenderPassBeginInfo renderPassInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .renderPass = vaSwapChain.getRenderPass(),
-        .framebuffer = vaSwapChain.getFrameBuffer(i),
-        .renderArea = {.offset = {0, 0},
-                       .extent = vaSwapChain.getSwapChainExtent()},
-        .clearValueCount = static_cast<uint32_t>(clearValues.size()),
-        .pClearValues = clearValues.data(),
-    };
-
-    vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo,
-                         VK_SUBPASS_CONTENTS_INLINE);
-
-    vaPipeline->bindCommandBuffer(commandBuffers[i]);
-    vaModel->bindCommandBuffer(commandBuffers[i]);
-    vaModel->draw(commandBuffers[i]);
-
-    vkCmdEndRenderPass(commandBuffers[i]);
-    if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-      throw std::runtime_error("failed to record command buffer!");
-    }
   }
 }
 
@@ -120,9 +148,9 @@ void FirstApp::createPipelineLayout() {
 
 void FirstApp::createPipeline() {
   PipelineConfigInfo configInfo{};
-  VaPipeline::setDefaultPipelineConfigInfo(configInfo, vaSwapChain.width(),
-                                           vaSwapChain.height());
-  configInfo.renderPass = vaSwapChain.getRenderPass();
+  VaPipeline::setDefaultPipelineConfigInfo(configInfo, vaSwapChain->width(),
+                                           vaSwapChain->height());
+  configInfo.renderPass = vaSwapChain->getRenderPass();
   configInfo.pipelineLayout = pipelineLayout;
   vaPipeline = std::make_unique<VaPipeline>(
       vaDevice, "./shaders/simple_shader.vert.spv",
