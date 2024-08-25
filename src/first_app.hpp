@@ -18,8 +18,8 @@ namespace va {
 
 struct SimplePushConstantData {
   glm::mat2 transform{1.f};
+  glm::vec4 color;
   glm::vec2 offset;
-  alignas(16) glm::vec3 color;
 };
 
 class FirstApp {

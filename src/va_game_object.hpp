@@ -40,7 +40,7 @@ public:
   std::shared_ptr<VaModel> model{};
 
   Transform2dComponent transform2d{};
-  glm::vec3 color{};
+  glm::vec4 color{};
 
 private:
   id_t id;
