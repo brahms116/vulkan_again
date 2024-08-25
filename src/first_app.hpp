@@ -5,6 +5,7 @@
 #include "va_pipeline.hpp"
 #include "va_swap_chain.hpp"
 #include "va_window.hpp"
+#include "va_game_object.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -16,6 +17,7 @@
 namespace va {
 
 struct SimplePushConstantData {
+  glm::mat2 transform{1.f};
   alignas(8) glm::vec2 offset;
   alignas(16) glm::vec3 color;
 };
@@ -34,13 +36,14 @@ public:
   void run();
 
 private:
-  void loadModels();
+  void loadGameObjects();
   void createPipelineLayout();
   void createPipeline();
   void createCommandBuffers();
   void recreateSwapChain();
   void freeCommandBuffers();
   void recordCommandBuffer(int imageIndex);
+  void renderGameObjects(VkCommandBuffer commandBuffer);
 
   void drawFrame();
 
@@ -51,6 +54,6 @@ private:
   std::unique_ptr<VaPipeline> vaPipeline;
   VkPipelineLayout pipelineLayout;
   std::vector<VkCommandBuffer> commandBuffers;
-  std::unique_ptr<VaModel> vaModel;
+  std::vector<VaGameObject> gameObjects;
 };
 } // namespace va

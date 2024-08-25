@@ -24,9 +24,9 @@ public:
   ~VaModel();
 
   VaModel(const VaModel &) = delete;
-  void operator=(const VaModel &) = delete;
+  VaModel &operator=(const VaModel &) = delete;
 
-  void bindCommandBuffer(VkCommandBuffer commandBuffer);
+  const void bindCommandBuffer(VkCommandBuffer commandBuffer);
   void draw(VkCommandBuffer commandBuffer);
 
 private:
