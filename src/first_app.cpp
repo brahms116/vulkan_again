@@ -86,6 +86,10 @@ void FirstApp::recreateSwapChain() {
 }
 
 void FirstApp::recordCommandBuffer(int imageIndex) {
+
+  static int frame = 0;
+  frame = (frame + 1) % 100;
+
   VkCommandBufferBeginInfo beginInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
   };
@@ -127,7 +131,19 @@ void FirstApp::recordCommandBuffer(int imageIndex) {
 
   vaPipeline->bindCommandBuffer(commandBuffers[imageIndex]);
   vaModel->bindCommandBuffer(commandBuffers[imageIndex]);
-  vaModel->draw(commandBuffers[imageIndex]);
+
+  for (int j = 0; j < 4; j++) {
+    SimplePushConstantData push{};
+    push.offset = {-0.5 + frame * 0.02f, -0.4f + j * 0.25f};
+    push.color = {0.0f, 0.0f, 0.2f + 0.2f * j};
+
+    vkCmdPushConstants(commandBuffers[imageIndex], pipelineLayout,
+                       VK_SHADER_STAGE_VERTEX_BIT |
+                           VK_SHADER_STAGE_FRAGMENT_BIT,
+                       0, sizeof(SimplePushConstantData), &push);
+
+    vaModel->draw(commandBuffers[imageIndex]);
+  }
 
   vkCmdEndRenderPass(commandBuffers[imageIndex]);
   if (vkEndCommandBuffer(commandBuffers[imageIndex]) != VK_SUCCESS) {
@@ -161,12 +177,17 @@ void FirstApp::run() {
 }
 
 void FirstApp::createPipelineLayout() {
+  VkPushConstantRange push{};
+  push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+  push.offset = 0;
+  push.size = sizeof(SimplePushConstantData);
+
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .setLayoutCount = 0,
       .pSetLayouts = nullptr,
-      .pushConstantRangeCount = 0,
-      .pPushConstantRanges = nullptr};
+      .pushConstantRangeCount = 1,
+      .pPushConstantRanges = &push};
 
   if (vkCreatePipelineLayout(vaDevice.device(), &pipelineLayoutInfo, nullptr,
                              &pipelineLayout) != VK_SUCCESS) {
