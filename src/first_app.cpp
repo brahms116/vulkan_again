@@ -4,6 +4,8 @@
 
 #include <array>
 
+#include <iostream>
+
 namespace va {
 
 FirstApp::FirstApp() {
@@ -56,8 +58,10 @@ void FirstApp::loadGameObjects() {
   auto model = std::make_shared<VaModel>(vaDevice, vertices);
   auto triangle = VaGameObject::create();
   triangle.model = model;
-  triangle.color = {.1f, .8f, .1f};
-  triangle.transform2d.translation.x = .2f;
+  triangle.color = {1.f, 1.f, 1.f};
+  triangle.transform2d.translation.x = 1.0f;
+  triangle.transform2d.scale = {2.f, .5f};
+  triangle.transform2d.rotation = 0.25 * glm::two_pi<float>();
 
   gameObjects.push_back(std::move(triangle));
 }
@@ -142,16 +146,24 @@ void FirstApp::recordCommandBuffer(int imageIndex) {
 void FirstApp::renderGameObjects(VkCommandBuffer commandBuffer) {
   vaPipeline->bindCommandBuffer(commandBuffer);
   for (auto &object : gameObjects) {
-    object.model->bindCommandBuffer(commandBuffer);
+
+    object.transform2d.rotation =
+        glm::mod(object.transform2d.rotation + 0.01f, glm::two_pi<float>());
+
     SimplePushConstantData push{};
     push.offset = object.transform2d.translation;
     push.color = object.color;
     push.transform = object.transform2d.mat2();
 
+    std::cout << push.color[0] << " " << object.color[1] << " " << push.color[2]
+              << std::endl;
+
     vkCmdPushConstants(commandBuffer, pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT |
                            VK_SHADER_STAGE_FRAGMENT_BIT,
                        0, sizeof(SimplePushConstantData), &push);
+
+    object.model->bindCommandBuffer(commandBuffer);
     object.model->draw(commandBuffer);
   }
 }

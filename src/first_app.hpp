@@ -1,16 +1,16 @@
 #pragma once
 
 #include "va_engine_device.hpp"
-#include "va_model.hpp"
+#include "va_game_object.hpp"
 #include "va_pipeline.hpp"
 #include "va_swap_chain.hpp"
 #include "va_window.hpp"
-#include "va_game_object.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <memory>
 
@@ -18,7 +18,7 @@ namespace va {
 
 struct SimplePushConstantData {
   glm::mat2 transform{1.f};
-  alignas(8) glm::vec2 offset;
+  glm::vec2 offset;
   alignas(16) glm::vec3 color;
 };
 
