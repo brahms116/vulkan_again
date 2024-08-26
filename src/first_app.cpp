@@ -59,11 +59,10 @@ void FirstApp::loadGameObjects() {
   auto triangle = VaGameObject::create();
   triangle.model = model;
   triangle.color = {1.f, 1.f, 1.f, 1.f};
-  triangle.transform2d.translation.x = .0f;
+  triangle.transform2d.translation.x = .5f;
   triangle.transform2d.translation.y = .0f;
   triangle.transform2d.scale = {1.f, 1.f};
-  /* triangle.transform2d.rotation = 0.25 * glm::two_pi<float>(); */
-  triangle.transform2d.rotation = 0;
+  triangle.transform2d.rotation = 0.25 * glm::two_pi<float>();
 
   gameObjects.push_back(std::move(triangle));
 }
@@ -147,11 +146,10 @@ void FirstApp::recordCommandBuffer(int imageIndex) {
 
 void FirstApp::renderGameObjects(VkCommandBuffer commandBuffer) {
   vaPipeline->bindCommandBuffer(commandBuffer);
-  for (auto &object : gameObjects) {
+  for (const auto &object : gameObjects) {
 
     /* object.transform2d.rotation = */
-    /*     glm::mod(object.transform2d.rotation + 0.01f, glm::two_pi<float>());
-     */
+    /*     glm::mod(object.transform2d.rotation + 0.01f, glm::two_pi<float>()); */
 
     SimplePushConstantData push{};
     push.transform = object.transform2d.mat2();

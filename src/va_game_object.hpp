@@ -10,7 +10,7 @@ struct Transform2dComponent {
   glm::vec2 translation{};
   glm::vec2 scale{1.f, 1.f};
   float rotation;
-  glm::mat2 mat2() {
+  glm::mat2 mat2 () const {
     const float s = glm::sin(rotation);
     const float c = glm::cos(rotation);
 
@@ -37,7 +37,7 @@ public:
 
   const id_t getId() { return id; };
 
-  std::shared_ptr<VaModel> model{};
+  std::shared_ptr<const VaModel> model{};
 
   Transform2dComponent transform2d{};
   glm::vec4 color{};

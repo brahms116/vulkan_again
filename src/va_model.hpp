@@ -26,8 +26,8 @@ public:
   VaModel(const VaModel &) = delete;
   VaModel &operator=(const VaModel &) = delete;
 
-  const void bindCommandBuffer(VkCommandBuffer commandBuffer);
-  void draw(VkCommandBuffer commandBuffer);
+  void bindCommandBuffer(VkCommandBuffer commandBuffer) const;
+  void draw(VkCommandBuffer commandBuffer) const;
 
 private:
   void createVertexBuffer(const std::vector<Vertex> &vertices);
