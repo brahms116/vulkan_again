@@ -4,8 +4,6 @@
 
 #include <array>
 
-#include <iostream>
-
 namespace va {
 
 FirstApp::FirstApp() {
@@ -146,11 +144,8 @@ void FirstApp::recordCommandBuffer(int imageIndex) {
 
 void FirstApp::renderGameObjects(VkCommandBuffer commandBuffer) {
   vaPipeline->bindCommandBuffer(commandBuffer);
+
   for (const auto &object : gameObjects) {
-
-    /* object.transform2d.rotation = */
-    /*     glm::mod(object.transform2d.rotation + 0.01f, glm::two_pi<float>()); */
-
     SimplePushConstantData push{};
     push.transform = object.transform2d.mat2();
     push.offset = object.transform2d.translation;
