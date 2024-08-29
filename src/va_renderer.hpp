@@ -1,8 +1,6 @@
 #pragma once
 
 #include "va_engine_device.hpp"
-#include "va_game_object.hpp"
-#include "va_pipeline.hpp"
 #include "va_swap_chain.hpp"
 #include "va_window.hpp"
 #include <cassert>
@@ -30,7 +28,7 @@ public:
   VkCommandBuffer getCurrentCommandBuffer() const {
     assert(isFrameStarted &&
            "Cannot get command buffer when frame not in progress");
-    return commandBuffers[currentImageIndex];
+    return commandBuffers[currentFrameIndex];
   }
 
   VkRenderPass getSwapChainRenderPass() const {
@@ -42,6 +40,12 @@ public:
   void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
   void endFrame();
 
+  int getFrameIndex() const {
+    assert(isFrameStarted &&
+           "Cannot get current frame index when frame not in progress");
+    return currentFrameIndex;
+  }
+
 private:
   void createCommandBuffers();
   void recreateSwapChain();
@@ -51,6 +55,7 @@ private:
   VaDevice &vaDevice;
   uint32_t currentImageIndex{0};
   bool isFrameStarted{false};
+  int currentFrameIndex{0};
 
   std::unique_ptr<VaSwapChain> vaSwapChain;
   std::vector<VkCommandBuffer> commandBuffers;

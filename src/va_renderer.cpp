@@ -33,18 +33,18 @@ void VaRenderer::recreateSwapChain() {
   if (vaSwapChain == nullptr) {
     vaSwapChain = std::make_unique<VaSwapChain>(vaDevice, extent);
   } else {
-    vaSwapChain =
-        std::make_unique<VaSwapChain>(vaDevice, extent, std::move(vaSwapChain));
-    if (vaSwapChain->imageCount() != commandBuffers.size()) {
-      freeCommandBuffers();
-      createCommandBuffers();
+    std::shared_ptr<VaSwapChain> oldSwapChain = std::move(vaSwapChain);
+    vaSwapChain = std::make_unique<VaSwapChain>(vaDevice, extent, oldSwapChain);
+
+    if (!oldSwapChain->compareSwapFormats(*vaSwapChain)) {
+      throw std::runtime_error("SwapChain formats incompatible");
     }
   }
   /* createPipeline(); */
 }
 
 void VaRenderer::createCommandBuffers() {
-  commandBuffers.resize(vaSwapChain->imageCount());
+  commandBuffers.resize(VaSwapChain::MAX_FRAMES_IN_FLIGHT);
 
   VkCommandBufferAllocateInfo allocInfo{
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -148,6 +148,7 @@ void VaRenderer::endFrame() {
     throw std::runtime_error("Failed to submit command buffer");
   }
   isFrameStarted = false;
+  currentFrameIndex = (currentFrameIndex + 1) % VaSwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
 } // namespace va
