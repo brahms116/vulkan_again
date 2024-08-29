@@ -16,11 +16,10 @@ namespace va {
 
 class SimpleRenderSystem {
 
-struct SimplePushConstantData {
-  glm::mat2 transform{1.f};
-  glm::vec4 color;
-  glm::vec2 offset;
-};
+  struct SimplePushConstantData {
+    glm::mat4 transform{1.f};
+    glm::vec4 color;
+  };
 
 public:
   SimpleRenderSystem(VaDevice &device, VkRenderPass renderPass);

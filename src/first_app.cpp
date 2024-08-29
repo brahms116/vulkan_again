@@ -9,23 +9,75 @@ FirstApp::FirstApp() { loadGameObjects(); }
 
 FirstApp::~FirstApp() {}
 
-void FirstApp::loadGameObjects() {
+std::unique_ptr<VaModel> createCubeModel(VaDevice &device, glm::vec3 offset) {
   std::vector<VaModel::Vertex> vertices{
-      {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-      {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-      {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+      // left face (white)
+      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+      {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+      {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+      {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+      {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+
+      // right face (yellow)
+      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+      {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+      {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+      {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+
+      // top face (orange, remember y axis points down)
+      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+
+      // bottom face (red)
+      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+
+      // nose face (blue)
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+
+      // tail face (green)
+      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
   };
 
-  auto model = std::make_shared<VaModel>(vaDevice, vertices);
-  auto triangle = VaGameObject::create();
-  triangle.model = model;
-  triangle.color = {1.f, 1.f, 1.f, 1.f};
-  triangle.transform2d.translation.x = .5f;
-  triangle.transform2d.translation.y = .0f;
-  triangle.transform2d.scale = {1.f, 1.f};
-  triangle.transform2d.rotation = 0.25 * glm::two_pi<float>();
+  for (auto &v : vertices) {
+    v.position += offset;
+  }
 
-  gameObjects.push_back(std::move(triangle));
+  return std::make_unique<VaModel>(device, vertices);
+}
+
+void FirstApp::loadGameObjects() {
+
+  std::shared_ptr<VaModel> cubeModel =
+      createCubeModel(vaDevice, {0.f, 0.f, 0.f});
+
+  auto cube = VaGameObject::create();
+  cube.model = cubeModel;
+  cube.transform.translation = {0.f, 0.f, .5f};
+  cube.transform.rotation = {1.2f, -1.2f, 0.f};
+  cube.transform.scale = {0.5f, 0.5f, 0.5f};
+  gameObjects.push_back(std::move(cube));
 }
 
 void FirstApp::run() {

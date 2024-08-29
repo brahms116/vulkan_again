@@ -24,8 +24,7 @@ void SimpleRenderSystem::renderGameObjects(
 
   for (const auto &object : gameObjects) {
     SimplePushConstantData push{};
-    push.transform = object.transform2d.mat2();
-    push.offset = object.transform2d.translation;
+    push.transform = object.transform.mat4();
     push.color = object.color;
     vkCmdPushConstants(commandBuffer, pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT |
