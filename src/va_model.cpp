@@ -22,7 +22,7 @@ void VaModel::bindCommandBuffer(VkCommandBuffer commandBuffer) const {
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 }
 
-void VaModel::draw(VkCommandBuffer commandBuffer) {
+void VaModel::draw(VkCommandBuffer commandBuffer) const {
   vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
 }
 

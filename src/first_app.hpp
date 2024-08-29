@@ -3,7 +3,7 @@
 #include "va_engine_device.hpp"
 #include "va_game_object.hpp"
 #include "va_pipeline.hpp"
-#include "va_swap_chain.hpp"
+#include "va_renderer.hpp"
 #include "va_window.hpp"
 
 #define GLM_FORCE_RADIANS
@@ -39,21 +39,14 @@ private:
   void loadGameObjects();
   void createPipelineLayout();
   void createPipeline();
-  void createCommandBuffers();
-  void recreateSwapChain();
-  void freeCommandBuffers();
-  void recordCommandBuffer(int imageIndex);
   void renderGameObjects(VkCommandBuffer commandBuffer);
-
-  void drawFrame();
 
   VaWindow vaWindow{WIDTH, HEIGHT, "helloworld"};
   VaDevice vaDevice{vaWindow};
+  VaRenderer vaRenderer{vaWindow, vaDevice};
 
-  std::unique_ptr<VaSwapChain> vaSwapChain;
   std::unique_ptr<VaPipeline> vaPipeline;
   VkPipelineLayout pipelineLayout;
-  std::vector<VkCommandBuffer> commandBuffers;
   std::vector<VaGameObject> gameObjects;
 };
 } // namespace va
