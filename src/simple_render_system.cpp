@@ -18,13 +18,13 @@ SimpleRenderSystem::~SimpleRenderSystem() {
 }
 
 void SimpleRenderSystem::renderGameObjects(
-    VkCommandBuffer commandBuffer,
-    const std::vector<VaGameObject> &gameObjects) {
+    VkCommandBuffer commandBuffer, const std::vector<VaGameObject> &gameObjects,
+    const VaCamera &camera) {
   vaPipeline->bindCommandBuffer(commandBuffer);
 
   for (const auto &object : gameObjects) {
     SimplePushConstantData push{};
-    push.transform = object.transform.mat4();
+    push.transform = camera.getProjection() * object.transform.mat4();
     push.color = object.color;
     vkCmdPushConstants(commandBuffer, pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT |

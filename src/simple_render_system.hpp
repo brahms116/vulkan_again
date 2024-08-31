@@ -10,6 +10,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include "va_camera.hpp"
+
 #include <memory>
 
 namespace va {
@@ -28,7 +30,8 @@ public:
   SimpleRenderSystem(const SimpleRenderSystem &) = delete;
   SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
   void renderGameObjects(VkCommandBuffer commandBuffer,
-                         const std::vector<VaGameObject> &gameObjects);
+                         const std::vector<VaGameObject> &gameObjects,
+                         const VaCamera &camera);
 
   void run();
 

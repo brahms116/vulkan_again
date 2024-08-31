@@ -5,6 +5,7 @@
 #include "va_game_object.hpp"
 #include "va_renderer.hpp"
 #include "va_window.hpp"
+#include "va_camera.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
