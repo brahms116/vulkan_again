@@ -84,14 +84,17 @@ void FirstApp::run() {
   SimpleRenderSystem simpleRenderSystem{vaDevice,
                                         vaRenderer.getSwapChainRenderPass()};
   VaCamera camera{};
+  /* camera.setViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f)); */
 
-  float fov = 0;
+  float y = 0.f;
+
   while (!vaWindow.shouldClose()) {
-    fov += 0.001f;
+    y -= 0.01f;
+    camera.setViewTarget(glm::vec3(0.f, y, 0.0f), glm::vec3(0.f, 0.f, 2.5f));
     glfwPollEvents();
     auto aspectRatio = vaRenderer.getAspectRatio();
     camera.setOrthographicProjection(-aspectRatio, aspectRatio, -1, 1, -1, 1);
-    camera.setPerspectiveProjection(fov, aspectRatio, 0.1f, 5.f);
+    camera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 5.f);
     if (auto commandBuffer = vaRenderer.beginFrame()) {
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);

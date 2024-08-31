@@ -22,9 +22,11 @@ void SimpleRenderSystem::renderGameObjects(
     const VaCamera &camera) {
   vaPipeline->bindCommandBuffer(commandBuffer);
 
+  auto projection = camera.getProjection() * camera.getView();
+
   for (const auto &object : gameObjects) {
     SimplePushConstantData push{};
-    push.transform = camera.getProjection() * object.transform.mat4();
+    push.transform = projection * object.transform.mat4();
     push.color = object.color;
     vkCmdPushConstants(commandBuffer, pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT |
