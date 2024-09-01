@@ -20,7 +20,12 @@ public:
     getAttributeDescriptions();
   };
 
-  VaModel(VaDevice &vaDevice, const std::vector<Vertex> &vertices);
+  struct Builder {
+    std::vector<Vertex> vertices{};
+    std::vector<uint32_t> indices{};
+  };
+
+  VaModel(VaDevice &vaDevice, const Builder &builder);
   ~VaModel();
 
   VaModel(const VaModel &) = delete;
@@ -30,10 +35,19 @@ public:
   void draw(VkCommandBuffer commandBuffer) const;
 
 private:
+  bool hasIndexBuffer;
+
   void createVertexBuffer(const std::vector<Vertex> &vertices);
+  void createIndexBuffer(const std::vector<uint32_t> &indices);
+
   VaDevice &vaDevice;
+
   VkBuffer vertexBuffer;
   VkDeviceMemory vertexBufferMemory;
   uint32_t vertexCount;
+
+  VkBuffer indexBuffer;
+  VkDeviceMemory indexBufferMemory;
+  uint32_t indexCount;
 };
 } // namespace va
