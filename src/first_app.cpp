@@ -1,7 +1,10 @@
 #include "first_app.hpp"
 
-#include <array>
-#include <stdexcept>
+#include "keyboard_movement_controller.hpp"
+#include "simple_render_system.hpp"
+#include "va_model.hpp"
+
+#include <chrono>
 
 namespace va {
 
@@ -84,17 +87,29 @@ void FirstApp::run() {
   SimpleRenderSystem simpleRenderSystem{vaDevice,
                                         vaRenderer.getSwapChainRenderPass()};
   VaCamera camera{};
-  /* camera.setViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f)); */
+  auto cameraEmpty = VaGameObject::create();
+  auto currentTime = std::chrono::high_resolution_clock::now();
 
-  float y = 0.f;
+  KeyboardMovementController inputController{};
 
   while (!vaWindow.shouldClose()) {
-    y -= 0.01f;
-    camera.setViewTarget(glm::vec3(0.f, y, 0.0f), glm::vec3(0.f, 0.f, 2.5f));
     glfwPollEvents();
+    auto newTime = std::chrono::high_resolution_clock::now();
+    float dt = std::chrono::duration<float, std::chrono::seconds::period>(
+                   newTime - currentTime)
+                   .count();
+
+    dt = std::min(dt, 0.1f);
+
+    currentTime = newTime;
     auto aspectRatio = vaRenderer.getAspectRatio();
-    camera.setOrthographicProjection(-aspectRatio, aspectRatio, -1, 1, -1, 1);
     camera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 5.f);
+    inputController.updateTransformXZ(vaWindow.getGLFWwindow(), cameraEmpty,
+                                      dt);
+
+    camera.setViewYXZ(cameraEmpty.transform.translation,
+                      cameraEmpty.transform.rotation);
+
     if (auto commandBuffer = vaRenderer.beginFrame()) {
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);

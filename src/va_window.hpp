@@ -24,6 +24,8 @@ public:
 
   bool shouldClose() { return glfwWindowShouldClose(window); }
 
+  GLFWwindow *getGLFWwindow() const { return window; };
+
   void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
 
 private:
