@@ -1,14 +1,34 @@
 
 #include "va_model.hpp"
-#include <cassert>
-#include <cstring>
-#include <stdexcept>
-#include <vulkan/vulkan_core.h>
+#include "va_utils.hpp"
 
-#include <iostream>
+// libs
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include <vulkan/vulkan_core.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
+// std
+
+#include <cassert>
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
+#include <unordered_map>
+
+namespace std {
+template <> struct hash<va::VaModel::Vertex> {
+  size_t operator()(va::VaModel::Vertex const &vertex) const {
+    size_t seed = 0;
+    va::hashCombine(seed, vertex.position, vertex.color, vertex.normal,
+                    vertex.uv);
+    return seed;
+  }
+};
+} // namespace std
 
 namespace va {
 
@@ -126,6 +146,8 @@ void VaModel::Builder::loadModel(const std::string &filepath) {
   vertices.clear();
   indices.clear();
 
+  std::unordered_map<Vertex, uint32_t> map{};
+
   for (const auto &shape : shapes) {
     for (const auto &index : shape.mesh.indices) {
       Vertex vertex{};
@@ -158,7 +180,12 @@ void VaModel::Builder::loadModel(const std::string &filepath) {
             attrib.normals[2 * index.texcoord_index + 1],
         };
       }
-      vertices.push_back(std::move(vertex));
+
+      if (map.count(vertex) == 0) {
+        map[vertex] = static_cast<uint32_t>(vertices.size());
+        vertices.push_back(vertex);
+      }
+      indices.push_back(map[vertex]);
     }
   }
 }

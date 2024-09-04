@@ -16,12 +16,12 @@ void FirstApp::loadGameObjects() {
 
   std::shared_ptr<VaModel> cubeModel = VaModel::createModelFromFile(vaDevice, "models/smooth_vase.obj");
 
-  auto cube = VaGameObject::create();
-  cube.model = cubeModel;
-  cube.transform.translation = {0.f, 0.f, 2.5f};
+  auto thing = VaGameObject::create();
+  thing.model = cubeModel;
+  thing.transform.translation = {0.f, 0.f, 2.5f};
   /* cube.transform.rotation = {1.2f, -1.2f, 0.f}; */
-  cube.transform.scale = glm::vec3(3.f);
-  gameObjects.push_back(std::move(cube));
+  thing.transform.scale = glm::vec3(3.f);
+  gameObjects.push_back(std::move(thing));
 }
 
 void FirstApp::run() {
