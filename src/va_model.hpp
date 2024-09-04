@@ -1,6 +1,7 @@
 #pragma once
 
 #include "va_engine_device.hpp"
+#include <memory>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -13,6 +14,8 @@ public:
   struct Vertex {
     glm::vec3 position;
     glm::vec3 color;
+    glm::vec3 normal{};
+    glm::vec2 uv{};
 
     static std::vector<VkVertexInputBindingDescription>
     getBindingDescriptions();
@@ -23,10 +26,15 @@ public:
   struct Builder {
     std::vector<Vertex> vertices{};
     std::vector<uint32_t> indices{};
+
+    void loadModel(const std::string &filepath);
   };
 
   VaModel(VaDevice &vaDevice, const Builder &builder);
   ~VaModel();
+
+  static std::unique_ptr<VaModel>
+  createModelFromFile(VaDevice &device, const std::string &filepath);
 
   VaModel(const VaModel &) = delete;
   VaModel &operator=(const VaModel &) = delete;
