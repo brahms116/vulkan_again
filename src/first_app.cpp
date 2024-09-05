@@ -19,7 +19,6 @@ void FirstApp::loadGameObjects() {
   auto thing = VaGameObject::create();
   thing.model = cubeModel;
   thing.transform.translation = {0.f, 0.f, 2.5f};
-  /* cube.transform.rotation = {1.2f, -1.2f, 0.f}; */
   thing.transform.scale = glm::vec3(3.f);
   gameObjects.push_back(std::move(thing));
 }

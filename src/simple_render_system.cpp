@@ -1,5 +1,6 @@
 #include "simple_render_system.hpp"
 
+#include <cmath>
 #include <stdexcept>
 
 #include <array>
@@ -18,16 +19,19 @@ SimpleRenderSystem::~SimpleRenderSystem() {
 }
 
 void SimpleRenderSystem::renderGameObjects(
-    VkCommandBuffer commandBuffer, const std::vector<VaGameObject> &gameObjects,
+    VkCommandBuffer commandBuffer, std::vector<VaGameObject> &gameObjects,
     const VaCamera &camera) {
   vaPipeline->bindCommandBuffer(commandBuffer);
 
   auto projection = camera.getProjection() * camera.getView();
 
-  for (const auto &object : gameObjects) {
+  for (auto &object : gameObjects) {
     SimplePushConstantData push{};
-    push.transform = projection * object.transform.mat4();
-    push.color = object.color;
+    object.transform.scale.x =
+        3.0 + fmod((object.transform.scale.x + 0.01f), 1);
+    auto modelTransform = object.transform.mat4();
+    push.transform = projection * modelTransform;
+    push.modelMatrix = modelTransform;
     vkCmdPushConstants(commandBuffer, pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT |
                            VK_SHADER_STAGE_FRAGMENT_BIT,

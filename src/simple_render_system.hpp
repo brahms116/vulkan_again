@@ -20,7 +20,7 @@ class SimpleRenderSystem {
 
   struct SimplePushConstantData {
     glm::mat4 transform{1.f};
-    glm::vec4 color;
+    glm::mat4 modelMatrix{1.f};
   };
 
 public:
@@ -30,7 +30,7 @@ public:
   SimpleRenderSystem(const SimpleRenderSystem &) = delete;
   SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
   void renderGameObjects(VkCommandBuffer commandBuffer,
-                         const std::vector<VaGameObject> &gameObjects,
+                         std::vector<VaGameObject> &gameObjects,
                          const VaCamera &camera);
 
   void run();
