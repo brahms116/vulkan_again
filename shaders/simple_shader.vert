@@ -9,7 +9,7 @@ layout(location = 0) out vec3 frag_color;
 
 layout(push_constant) uniform Push {
   mat4 transform;
-  mat4 model;
+  mat4 normalMatrix;
 } push;
 
 void main() {
@@ -20,7 +20,9 @@ void main() {
 
   mat3 inverseTranspose = transpose(inverse(mat3(push.model)));
 
-  float lightIntensity = min(AMBIENT + max(dot(normalize(inverseTranspose * normal), DIR_TO_LIGHT), 0) ,1.0);
+  vec3 normalWorldSpace = normalise(mat3(push.normalMatrix) * normal);
+
+  float lightIntensity = min(AMBIENT + max(dot(normalWorldSpace, DIR_TO_LIGHT), 0) ,1.0);
 
   frag_color = lightIntensity *  color;
 }

@@ -3,8 +3,6 @@
 #include <cmath>
 #include <stdexcept>
 
-#include <array>
-
 namespace va {
 
 SimpleRenderSystem::SimpleRenderSystem(VaDevice &device,
@@ -31,7 +29,7 @@ void SimpleRenderSystem::renderGameObjects(
         3.0 + fmod((object.transform.scale.x + 0.01f), 1);
     auto modelTransform = object.transform.mat4();
     push.transform = projection * modelTransform;
-    push.modelMatrix = modelTransform;
+    push.normalMatrix = object.transform.normalMatrix();
     vkCmdPushConstants(commandBuffer, pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT |
                            VK_SHADER_STAGE_FRAGMENT_BIT,
