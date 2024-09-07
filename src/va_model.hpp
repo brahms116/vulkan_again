@@ -1,5 +1,6 @@
 #pragma once
 
+#include "va_buffer.hpp"
 #include "va_engine_device.hpp"
 #include <memory>
 
@@ -55,12 +56,11 @@ private:
 
   VaDevice &vaDevice;
 
-  VkBuffer vertexBuffer;
-  VkDeviceMemory vertexBufferMemory;
+  std::unique_ptr<VaBuffer> vaVertexBuffer;
   uint32_t vertexCount;
 
-  VkBuffer indexBuffer;
-  VkDeviceMemory indexBufferMemory;
+  std::unique_ptr<VaBuffer> vaIndexBuffer;
   uint32_t indexCount;
+
 };
 } // namespace va

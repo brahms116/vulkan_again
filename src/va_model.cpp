@@ -48,23 +48,16 @@ VaModel::createModelFromFile(VaDevice &device, const std::string &filepath) {
   return std::make_unique<VaModel>(device, builder);
 }
 
-VaModel::~VaModel() {
-  vkDestroyBuffer(vaDevice.device(), vertexBuffer, nullptr);
-  vkFreeMemory(vaDevice.device(), vertexBufferMemory, nullptr);
-
-  if (hasIndexBuffer) {
-    vkDestroyBuffer(vaDevice.device(), indexBuffer, nullptr);
-    vkFreeMemory(vaDevice.device(), indexBufferMemory, nullptr);
-  }
-};
+VaModel::~VaModel(){};
 
 void VaModel::bindCommandBuffer(VkCommandBuffer commandBuffer) const {
-  VkBuffer buffers[] = {vertexBuffer};
+  VkBuffer buffers[] = {vaVertexBuffer->getBuffer()};
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
 
   if (hasIndexBuffer) {
-    vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(commandBuffer, vaIndexBuffer->getBuffer(), 0,
+                         VK_INDEX_TYPE_UINT32);
   }
 }
 
@@ -111,28 +104,21 @@ void VaModel::createVertexBuffer(const std::vector<Vertex> &vertices) {
 
   VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
 
-  VkBuffer stagingBuffer;
-  VkDeviceMemory stagingBufferMemory;
+  VaBuffer stagingBuffer =
+      VaBuffer(vaDevice, bufferSize, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-  vaDevice.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                        stagingBuffer, stagingBufferMemory);
+  stagingBuffer.map();
+  stagingBuffer.writeToBuffer((void *)vertices.data());
 
-  void *data;
-  vkMapMemory(vaDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-  memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
-  vkUnmapMemory(vaDevice.device(), stagingBufferMemory);
-
-  vaDevice.createBuffer(
-      bufferSize,
+  vaVertexBuffer = std::make_unique<VaBuffer>(
+      vaDevice, bufferSize, 1,
       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-  vaDevice.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-  vkDestroyBuffer(vaDevice.device(), stagingBuffer, nullptr);
-  vkFreeMemory(vaDevice.device(), stagingBufferMemory, nullptr);
+  vaDevice.copyBuffer(stagingBuffer.getBuffer(), vaVertexBuffer->getBuffer(),
+                      bufferSize);
 }
 
 void VaModel::Builder::loadModel(const std::string &filepath) {
@@ -204,27 +190,20 @@ void VaModel::createIndexBuffer(const std::vector<uint32_t> &indices) {
   hasIndexBuffer = true;
   VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
 
-  VkBuffer stagingBuffer;
-  VkDeviceMemory stagingBufferMemory;
+  VaBuffer stagingBuffer =
+      VaBuffer(vaDevice, bufferSize, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-  vaDevice.createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                        stagingBuffer, stagingBufferMemory);
+  stagingBuffer.map();
+  stagingBuffer.writeToBuffer((void *)indices.data());
 
-  void *data;
-  vkMapMemory(vaDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
-  memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
-  vkUnmapMemory(vaDevice.device(), stagingBufferMemory);
-
-  vaDevice.createBuffer(
-      bufferSize,
+  vaIndexBuffer = std::make_unique<VaBuffer>(
+      vaDevice, bufferSize, 1,
       VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-  vaDevice.copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-  vkDestroyBuffer(vaDevice.device(), stagingBuffer, nullptr);
-  vkFreeMemory(vaDevice.device(), stagingBufferMemory, nullptr);
+  vaDevice.copyBuffer(stagingBuffer.getBuffer(), vaIndexBuffer->getBuffer(),
+                      bufferSize);
 }
 } // namespace va
