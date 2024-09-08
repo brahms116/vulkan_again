@@ -20,12 +20,13 @@ namespace va {
 class SimpleRenderSystem {
 
   struct SimplePushConstantData {
-    glm::mat4 transform{1.f};
+    glm::mat4 modelMatrix{1.f};
     glm::mat4 normalMatrix{1.f};
   };
 
 public:
-  SimpleRenderSystem(VaDevice &device, VkRenderPass renderPass);
+  SimpleRenderSystem(VaDevice &device, VkRenderPass renderPass,
+                     VkDescriptorSetLayout globalSetLayout);
   ~SimpleRenderSystem();
 
   SimpleRenderSystem(const SimpleRenderSystem &) = delete;
@@ -37,7 +38,7 @@ public:
 
 private:
   void loadGameObjects();
-  void createPipelineLayout();
+  void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
   void createPipeline(VkRenderPass);
 
   VaDevice &vaDevice;

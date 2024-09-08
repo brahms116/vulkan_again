@@ -1,5 +1,6 @@
 #pragma once
 
+#include "va_descriptors.hpp"
 #include "va_engine_device.hpp"
 #include "va_game_object.hpp"
 #include "va_renderer.hpp"
@@ -10,7 +11,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
-
 
 namespace va {
 
@@ -34,6 +34,7 @@ private:
   VaDevice vaDevice{vaWindow};
   VaRenderer vaRenderer{vaWindow, vaDevice};
 
+  std::unique_ptr<VaDescriptorPool> globalPool;
   std::vector<VaGameObject> gameObjects;
 };
 } // namespace va

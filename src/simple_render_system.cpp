@@ -6,9 +6,10 @@
 namespace va {
 
 SimpleRenderSystem::SimpleRenderSystem(VaDevice &device,
-                                       VkRenderPass renderPass)
+                                       VkRenderPass renderPass,
+                                       VkDescriptorSetLayout globalSetLayout)
     : vaDevice{device} {
-  createPipelineLayout();
+  createPipelineLayout(globalSetLayout);
   createPipeline(renderPass);
 }
 
@@ -20,15 +21,16 @@ void SimpleRenderSystem::renderGameObjects(
     const FrameInfo &frameInfo, std::vector<VaGameObject> &gameObjects) {
   vaPipeline->bindCommandBuffer(frameInfo.commandBuffer);
 
-  auto projection =
-      frameInfo.camera.getProjection() * frameInfo.camera.getView();
+  vkCmdBindDescriptorSets(frameInfo.commandBuffer,
+                          VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
+                          &frameInfo.descriptorSet, 0, nullptr);
 
   for (auto &object : gameObjects) {
     SimplePushConstantData push{};
     object.transform.scale.x =
         3.0 + fmod((object.transform.scale.x + 0.01f), 1);
     auto modelTransform = object.transform.mat4();
-    push.transform = projection * modelTransform;
+    push.modelMatrix = modelTransform;
     push.normalMatrix = object.transform.normalMatrix();
     vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT |
@@ -40,7 +42,8 @@ void SimpleRenderSystem::renderGameObjects(
   }
 }
 
-void SimpleRenderSystem::createPipelineLayout() {
+void SimpleRenderSystem::createPipelineLayout(
+    VkDescriptorSetLayout globalSetLayout) {
   VkPushConstantRange push{};
   push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
   push.offset = 0;
@@ -48,8 +51,8 @@ void SimpleRenderSystem::createPipelineLayout() {
 
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 0,
-      .pSetLayouts = nullptr,
+      .setLayoutCount = 1,
+      .pSetLayouts = &globalSetLayout,
       .pushConstantRangeCount = 1,
       .pPushConstantRanges = &push};
 

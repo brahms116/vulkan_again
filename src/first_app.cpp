@@ -16,7 +16,14 @@ struct GlobalUbo {
       glm::vec4(glm::normalize(glm::vec3(1.f, -3.f, -2.f)), 0.0f);
 };
 
-FirstApp::FirstApp() { loadGameObjects(); }
+FirstApp::FirstApp() {
+  globalPool = VaDescriptorPool::Builder(vaDevice)
+                   .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                VaSwapChain::MAX_FRAMES_IN_FLIGHT)
+                   .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT)
+                   .build();
+  loadGameObjects();
+}
 
 FirstApp::~FirstApp() {}
 
@@ -33,8 +40,16 @@ void FirstApp::loadGameObjects() {
 }
 
 void FirstApp::run() {
-  SimpleRenderSystem simpleRenderSystem{vaDevice,
-                                        vaRenderer.getSwapChainRenderPass()};
+
+  auto globalDescriptorSetLayout =
+      VaDescriptorSetLayout::Builder(vaDevice)
+          .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                      VK_SHADER_STAGE_VERTEX_BIT)
+          .build();
+
+  SimpleRenderSystem simpleRenderSystem{
+      vaDevice, vaRenderer.getSwapChainRenderPass(),
+      globalDescriptorSetLayout->getDescriptorSetLayout()};
 
   std::vector<std::unique_ptr<VaBuffer>> uniformBuffers(
       VaSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -46,6 +61,16 @@ void FirstApp::run() {
         vaDevice.properties.limits.minUniformBufferOffsetAlignment);
 
     uniformBuffers[i]->map();
+  }
+
+  std::vector<VkDescriptorSet> globalDescriptorSets(
+      VaSwapChain::MAX_FRAMES_IN_FLIGHT);
+
+  for (int i = 0; i < globalDescriptorSets.size(); i++) {
+    auto bufferInfo = uniformBuffers[i]->descriptorInfo();
+    VaDescriptorWriter(*globalDescriptorSetLayout, *globalPool)
+        .writeBuffer(0, &bufferInfo)
+        .build(globalDescriptorSets[i]);
   }
 
   VaCamera camera{};
@@ -80,7 +105,8 @@ void FirstApp::run() {
       uniformBuffers[frameIndex]->writeToBuffer(&ubo);
       uniformBuffers[frameIndex]->flush();
 
-      FrameInfo frameInfo{frameIndex, dt, commandBuffer, camera};
+      FrameInfo frameInfo{frameIndex, dt, commandBuffer, camera,
+                          globalDescriptorSets[frameIndex]};
 
       // Render
       vaRenderer.beginSwapChainRenderPass(commandBuffer);

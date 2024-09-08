@@ -11,5 +11,6 @@ struct FrameInfo {
   float frameTime;
   VkCommandBuffer commandBuffer;
   VaCamera &camera;
+  VkDescriptorSet descriptorSet;
 };
 } // namespace va
