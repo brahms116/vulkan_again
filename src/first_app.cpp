@@ -3,6 +3,7 @@
 #include "keyboard_movement_controller.hpp"
 #include "simple_render_system.hpp"
 #include "va_buffer.hpp"
+#include "va_frame_info.hpp"
 #include "va_model.hpp"
 
 #include <chrono>
@@ -79,9 +80,11 @@ void FirstApp::run() {
       uniformBuffers[frameIndex]->writeToBuffer(&ubo);
       uniformBuffers[frameIndex]->flush();
 
+      FrameInfo frameInfo{frameIndex, dt, commandBuffer, camera};
+
       // Render
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
-      simpleRenderSystem.renderGameObjects(commandBuffer, gameObjects, camera);
+      simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
       vaRenderer.endSwapChainRenderPass(commandBuffer);
       vaRenderer.endFrame();
     };

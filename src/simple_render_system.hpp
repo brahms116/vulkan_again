@@ -1,6 +1,7 @@
 #pragma once
 
 #include "va_engine_device.hpp"
+#include "va_frame_info.hpp"
 #include "va_game_object.hpp"
 #include "va_pipeline.hpp"
 
@@ -29,9 +30,8 @@ public:
 
   SimpleRenderSystem(const SimpleRenderSystem &) = delete;
   SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
-  void renderGameObjects(VkCommandBuffer commandBuffer,
-                         std::vector<VaGameObject> &gameObjects,
-                         const VaCamera &camera);
+  void renderGameObjects(const FrameInfo &frameInfor,
+                         std::vector<VaGameObject> &gameObjects);
 
   void run();
 
