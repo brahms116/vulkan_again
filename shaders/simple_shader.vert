@@ -20,13 +20,12 @@ layout(push_constant) uniform Push {
 void main() {
   gl_Position = ubo.projectionViewMatrix * push.modelMatrix * vec4(position, 1.0);
 
-  vec3 DIR_TO_LIGHT = ubo.directionToLight.xyz;
 
   float AMBIENT = 0.2;
 
-  vec3 normalWorldSpace = normalize(mat3(push.normalMatrix) * normal);
+  vec4 normalWorldSpace = normalize(push.normalMatrix * vec4(normal, 0.0));
 
-  float lightIntensity = min(AMBIENT + max(dot(normalWorldSpace, DIR_TO_LIGHT), 0) ,1.0);
+  float lightIntensity = min(AMBIENT + max(dot(normalWorldSpace, ubo.directionToLight), 0) ,1.0);
 
   frag_color = lightIntensity *  color;
 }
