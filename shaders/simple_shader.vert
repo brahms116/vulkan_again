@@ -23,8 +23,9 @@ void main() {
   vec4 positionWorldSpace = push.modelMatrix * vec4(position, 1.0);
   gl_Position = ubo.projectionViewMatrix * positionWorldSpace;
 
-  vec4 directionToLight = ubo.lightPosition - positionWorldSpace;
   vec4 normalWorldSpace = normalize(push.normalMatrix * vec4(normal, 0.0));
+
+  vec4 directionToLight = ubo.lightPosition - positionWorldSpace;
   float attenuation =  1.0 / dot(directionToLight, directionToLight);
 
   vec3 ambientLight = ubo.ambientColor.xyz * ubo.ambientColor.w;
