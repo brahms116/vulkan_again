@@ -12,8 +12,9 @@ namespace va {
 
 struct GlobalUbo {
   glm::mat4 projectionView;
-  glm::vec4 lightDirection =
-      glm::vec4(glm::normalize(glm::vec3(1.f, -3.f, -2.f)), 0.0f);
+  glm::vec4 ambientColor{1.f, 1.f, 1.f, .02f};
+  glm::vec4 lightPosition{0.f, -.5f, 1.f, 1.f};
+  glm::vec4 lightColor{1.f};
 };
 
 FirstApp::FirstApp() {
