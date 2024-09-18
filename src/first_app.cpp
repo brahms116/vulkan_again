@@ -13,7 +13,7 @@ namespace va {
 struct GlobalUbo {
   glm::mat4 projectionView;
   glm::vec4 ambientColor{1.f, 1.f, 1.f, .02f};
-  glm::vec4 lightPosition{0.f, -1.f, .5f, 1.f};
+  glm::vec4 lightPosition{-1.f, -1.f, -1.f, 1.f};
   glm::vec4 lightColor{1.f};
 };
 
@@ -33,11 +33,20 @@ void FirstApp::loadGameObjects() {
   std::shared_ptr<VaModel> cubeModel =
       VaModel::createModelFromFile(vaDevice, "models/smooth_vase.obj");
 
+  std::shared_ptr<VaModel> floorModel =
+      VaModel::createModelFromFile(vaDevice, "models/quad.obj");
+
   auto thing = VaGameObject::create();
   thing.model = cubeModel;
-  thing.transform.translation = {0.f, 0.f, 2.5f};
+  thing.transform.translation = {-.5f, .5f, 0.f};
   thing.transform.scale = glm::vec3(3.f);
   gameObjects.push_back(std::move(thing));
+
+  auto floor = VaGameObject::create();
+  floor.model = floorModel;
+  floor.transform.translation = {0.f, 0.5f, 0.f};
+  floor.transform.scale = glm::vec3(3.f, 1.f, 3.f);
+  gameObjects.push_back(std::move(floor));
 }
 
 void FirstApp::run() {
@@ -76,6 +85,7 @@ void FirstApp::run() {
 
   VaCamera camera{};
   auto cameraEmpty = VaGameObject::create();
+  cameraEmpty.transform.translation.z = -2.5f;
   auto currentTime = std::chrono::high_resolution_clock::now();
 
   KeyboardMovementController inputController{};
@@ -91,7 +101,7 @@ void FirstApp::run() {
 
     currentTime = newTime;
     auto aspectRatio = vaRenderer.getAspectRatio();
-    camera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 5.f);
+    camera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 100.f);
     inputController.updateTransformXZ(vaWindow.getGLFWwindow(), cameraEmpty,
                                       dt);
 
