@@ -14,6 +14,10 @@ struct PipelineConfigInfo {
   PipelineConfigInfo(PipelineConfigInfo &&) = delete;
   PipelineConfigInfo &operator=(const PipelineConfigInfo &&other) = delete;
 
+
+  std::vector<VkVertexInputBindingDescription> bindingDescriptions{};
+  std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+
   VkPipelineViewportStateCreateInfo viewportInfo;
   VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
   VkPipelineRasterizationStateCreateInfo rasterizationInfo;

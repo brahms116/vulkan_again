@@ -77,8 +77,8 @@ void VaPipeline::createGraphicsPipeline(
       .pSpecializationInfo = nullptr,
   };
 
-  auto attributeDescriptions = VaModel::Vertex::getAttributeDescriptions();
-  auto bindingDescriptions = VaModel::Vertex::getBindingDescriptions();
+  auto &bindingDescriptions = configInfo.bindingDescriptions;
+  auto &attributeDescriptions = configInfo.attributeDescriptions;
 
   VkPipelineVertexInputStateCreateInfo vertexInputInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -207,5 +207,10 @@ void VaPipeline::setDefaultPipelineConfigInfo(PipelineConfigInfo &configInfo) {
   configInfo.dynamicStateInfo.dynamicStateCount =
       static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
   configInfo.dynamicStateInfo.flags = 0;
+
+  configInfo.bindingDescriptions = VaModel::Vertex::getBindingDescriptions();
+  configInfo.attributeDescriptions =
+      VaModel::Vertex::getAttributeDescriptions();
 }
+
 } // namespace va
