@@ -31,8 +31,7 @@ public:
 
   SimpleRenderSystem(const SimpleRenderSystem &) = delete;
   SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
-  void renderGameObjects(const FrameInfo &frameInfor,
-                         std::vector<VaGameObject> &gameObjects);
+  void renderGameObjects(const FrameInfo &frameInfo);
 
   void run();
 

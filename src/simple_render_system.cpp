@@ -17,15 +17,15 @@ SimpleRenderSystem::~SimpleRenderSystem() {
   vkDestroyPipelineLayout(vaDevice.device(), pipelineLayout, nullptr);
 }
 
-void SimpleRenderSystem::renderGameObjects(
-    const FrameInfo &frameInfo, std::vector<VaGameObject> &gameObjects) {
+void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) {
   vaPipeline->bindCommandBuffer(frameInfo.commandBuffer);
 
   vkCmdBindDescriptorSets(frameInfo.commandBuffer,
                           VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                           &frameInfo.descriptorSet, 0, nullptr);
 
-  for (auto &object : gameObjects) {
+  for (auto &kv : frameInfo.gameObjects) {
+    auto &object = kv.second;
     SimplePushConstantData push{};
     /* object.transform.scale.x = */
     /*     3.0 + fmod((object.transform.scale.x + 0.01f), 1); */

@@ -35,6 +35,6 @@ private:
   VaRenderer vaRenderer{vaWindow, vaDevice};
 
   std::unique_ptr<VaDescriptorPool> globalPool;
-  std::vector<VaGameObject> gameObjects;
+  VaGameObject::Map gameObjects;
 };
 } // namespace va

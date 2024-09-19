@@ -11,8 +11,9 @@
 namespace va {
 
 struct GlobalUbo {
-  glm::mat4 projectionView;
-  glm::vec4 ambientColor{1.f, 1.f, 1.f, .02f};
+  glm::mat4 projectionMatrix;
+  glm::mat4 viewMatrix;
+  glm::vec4 ambientColor{1.f, 1.f, 1.f, .15f};
   glm::vec4 lightPosition{-1.f, -1.f, -1.f, 1.f};
   glm::vec4 lightColor{1.f};
 };
@@ -40,13 +41,13 @@ void FirstApp::loadGameObjects() {
   thing.model = cubeModel;
   thing.transform.translation = {-.5f, .5f, 0.f};
   thing.transform.scale = glm::vec3(3.f);
-  gameObjects.push_back(std::move(thing));
+  gameObjects.emplace(thing.getId(), std::move(thing));
 
   auto floor = VaGameObject::create();
   floor.model = floorModel;
   floor.transform.translation = {0.f, 0.5f, 0.f};
   floor.transform.scale = glm::vec3(3.f, 1.f, 3.f);
-  gameObjects.push_back(std::move(floor));
+  gameObjects.emplace(floor.getId(), std::move(floor));
 }
 
 void FirstApp::run() {
@@ -112,16 +113,21 @@ void FirstApp::run() {
       // Update
       int frameIndex = vaRenderer.getFrameIndex();
       GlobalUbo ubo{};
-      ubo.projectionView = camera.getProjection() * camera.getView();
+      ubo.projectionMatrix = camera.getProjection();
+      ubo.viewMatrix = camera.getView();
       uniformBuffers[frameIndex]->writeToBuffer(&ubo);
       uniformBuffers[frameIndex]->flush();
 
-      FrameInfo frameInfo{frameIndex, dt, commandBuffer, camera,
-                          globalDescriptorSets[frameIndex]};
+      FrameInfo frameInfo{frameIndex,
+                          dt,
+                          commandBuffer,
+                          camera,
+                          globalDescriptorSets[frameIndex],
+                          gameObjects};
 
       // Render
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
-      simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+      simpleRenderSystem.renderGameObjects(frameInfo);
       vaRenderer.endSwapChainRenderPass(commandBuffer);
       vaRenderer.endFrame();
     };

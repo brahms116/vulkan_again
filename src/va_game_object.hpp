@@ -3,6 +3,7 @@
 #include "va_model.hpp"
 
 #include <memory>
+#include <unordered_map>
 
 namespace va {
 
@@ -20,6 +21,7 @@ struct TransformComponent {
 class VaGameObject {
 public:
   using id_t = int;
+  using Map = std::unordered_map<id_t, VaGameObject>;
 
   VaGameObject(const VaGameObject &) = delete;
   void operator=(const VaGameObject &) = delete;
