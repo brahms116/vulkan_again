@@ -7,7 +7,8 @@ layout (location = 2) in vec3 fragNormal;
 layout (location = 0) out vec4 outColor;
 
 layout(set=0, binding=0) uniform GlobalUbo {
-  mat4 projectionViewMatrix;
+  mat4 projectionMatrix;
+  mat4 viewMatrix;
   vec4 ambientColor;
   vec4 lightPosition;
   vec4 lightColor;
