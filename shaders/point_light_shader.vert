@@ -19,4 +19,12 @@ const vec2 OFFSETS[6] = vec2[](
   vec2(1.0, 1.0)
 );
 
-void main() {}
+void main() {
+  fragOffset = OFFSETS[gl_VertexIndex];
+
+  float LIGHT_RADIUS = 0.03;
+
+  vec4 lightPositionInCameraSpace = ubo.viewMatrix * ubo.lightPosition;
+  vec4 cameraSpace = lightPositionInCameraSpace + LIGHT_RADIUS * vec4(fragOffset, 0.0, 0.0);
+  gl_Position = ubo.projectionMatrix * cameraSpace;
+}

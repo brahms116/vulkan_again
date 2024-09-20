@@ -5,43 +5,29 @@
 
 namespace va {
 
-PointLightSystem::PointLightSystem(VaDevice &device, VkRenderPass renderPass,
-                                   VkDescriptorSetLayout globalSetLayout)
+PointLightRenderSystem::PointLightRenderSystem(
+    VaDevice &device, VkRenderPass renderPass,
+    VkDescriptorSetLayout globalSetLayout)
     : vaDevice{device} {
   createPipelineLayout(globalSetLayout);
   createPipeline(renderPass);
 }
 
-PointLightSystem::~PointLightSystem() {
+PointLightRenderSystem::~PointLightRenderSystem() {
   vkDestroyPipelineLayout(vaDevice.device(), pipelineLayout, nullptr);
 }
 
-void PointLightSystem::render(const FrameInfo &frameInfo) {
+void PointLightRenderSystem::render(const FrameInfo &frameInfo) {
   vaPipeline->bindCommandBuffer(frameInfo.commandBuffer);
 
   vkCmdBindDescriptorSets(frameInfo.commandBuffer,
                           VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                           &frameInfo.descriptorSet, 0, nullptr);
 
-  for (auto &kv : frameInfo.gameObjects) {
-    auto &object = kv.second;
-    SimplePushConstantData push{};
-    /* object.transform.scale.x = */
-    /*     3.0 + fmod((object.transform.scale.x + 0.01f), 1); */
-    auto modelTransform = object.transform.mat4();
-    push.modelMatrix = modelTransform;
-    push.normalMatrix = object.transform.normalMatrix();
-    vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout,
-                       VK_SHADER_STAGE_VERTEX_BIT |
-                           VK_SHADER_STAGE_FRAGMENT_BIT,
-                       0, sizeof(SimplePushConstantData), &push);
-
-    object.model->bindCommandBuffer(frameInfo.commandBuffer);
-    object.model->draw(frameInfo.commandBuffer);
-  }
+  vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
 }
 
-void PointLightSystem::createPipelineLayout(
+void PointLightRenderSystem::createPipelineLayout(
     VkDescriptorSetLayout globalSetLayout) {
   /* VkPushConstantRange push{}; */
   /* push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT |
@@ -62,7 +48,7 @@ void PointLightSystem::createPipelineLayout(
   }
 };
 
-void PointLightSystem::createPipeline(VkRenderPass renderPass) {
+void PointLightRenderSystem::createPipeline(VkRenderPass renderPass) {
   PipelineConfigInfo configInfo{};
   VaPipeline::setDefaultPipelineConfigInfo(configInfo);
   configInfo.renderPass = renderPass;
@@ -70,8 +56,8 @@ void PointLightSystem::createPipeline(VkRenderPass renderPass) {
   configInfo.attributeDescriptions.clear();
   configInfo.bindingDescriptions.clear();
   vaPipeline = std::make_unique<VaPipeline>(
-      vaDevice, "./shaders/simple_shader.vert.spv",
-      "./shaders/simple_shader.frag.spv", configInfo);
+      vaDevice, "./shaders/point_light_shader.vert.spv",
+      "./shaders/point_light_shader.frag.spv", configInfo);
 };
 
 } // namespace va

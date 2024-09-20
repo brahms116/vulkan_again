@@ -17,7 +17,7 @@
 
 namespace va {
 
-class PointLightSystem {
+class PointLightRenderSystem {
 
   struct SimplePushConstantData {
     glm::mat4 modelMatrix{1.f};
@@ -25,12 +25,12 @@ class PointLightSystem {
   };
 
 public:
-  PointLightSystem(VaDevice &device, VkRenderPass renderPass,
+  PointLightRenderSystem(VaDevice &device, VkRenderPass renderPass,
                      VkDescriptorSetLayout globalSetLayout);
-  ~PointLightSystem();
+  ~PointLightRenderSystem();
 
-  PointLightSystem(const PointLightSystem &) = delete;
-  PointLightSystem &operator=(const PointLightSystem &) = delete;
+  PointLightRenderSystem(const PointLightRenderSystem &) = delete;
+  PointLightRenderSystem &operator=(const PointLightRenderSystem &) = delete;
   void render(const FrameInfo &frameInfo);
 
   void run();

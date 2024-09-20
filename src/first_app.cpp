@@ -1,6 +1,7 @@
 #include "first_app.hpp"
 
 #include "keyboard_movement_controller.hpp"
+#include "point_light_render_system.hpp"
 #include "simple_render_system.hpp"
 #include "va_buffer.hpp"
 #include "va_frame_info.hpp"
@@ -59,6 +60,10 @@ void FirstApp::run() {
           .build();
 
   SimpleRenderSystem simpleRenderSystem{
+      vaDevice, vaRenderer.getSwapChainRenderPass(),
+      globalDescriptorSetLayout->getDescriptorSetLayout()};
+
+  PointLightRenderSystem pointLightRenderSystem{
       vaDevice, vaRenderer.getSwapChainRenderPass(),
       globalDescriptorSetLayout->getDescriptorSetLayout()};
 
@@ -128,6 +133,7 @@ void FirstApp::run() {
       // Render
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(frameInfo);
+      pointLightRenderSystem.render(frameInfo);
       vaRenderer.endSwapChainRenderPass(commandBuffer);
       vaRenderer.endFrame();
     };
