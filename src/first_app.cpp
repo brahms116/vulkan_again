@@ -140,6 +140,7 @@ void FirstApp::run() {
       GlobalUbo ubo{};
       ubo.projectionMatrix = camera.getProjection();
       ubo.viewMatrix = camera.getView();
+      ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
 
       pointLightRenderSystem.update(frameInfo, ubo);
 
