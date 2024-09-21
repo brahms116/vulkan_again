@@ -25,7 +25,12 @@ void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) {
                           &frameInfo.descriptorSet, 0, nullptr);
 
   for (auto &kv : frameInfo.gameObjects) {
+
     auto &object = kv.second;
+
+    if (object.model == nullptr)
+      continue;
+
     SimplePushConstantData push{};
     /* object.transform.scale.x = */
     /*     3.0 + fmod((object.transform.scale.x + 0.01f), 1); */
