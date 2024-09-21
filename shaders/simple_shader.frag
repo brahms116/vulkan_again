@@ -31,18 +31,31 @@ void main() {
   //  Variable storing the summation result, with the initial value being the ambient light
   vec3 diffuseLight = ubo.ambientColor.xyz * ubo.ambientColor.w;
 
+  //  Variable storing the summation result of specular lighting
+  vec3 specularLight = vec3(0.0);
+
+  vec3 cameraPositionWorld = ubo.inverseViewMatrix[3].xyz;
+  vec3 normalizedViewDirection = normalize(cameraPositionWorld - fragPosition);
+
   for (int i = 0; i < ubo.numLights; i++) {
     PointLight light = ubo.pointLights[i];
     vec3 directionToLight = light.position.xyz - fragPosition;
-
-    float diffuseLightFactor = max(dot(surfaceNormal, normalize(directionToLight)), 0);
+    vec3 normalizedDirectionToLight = normalize(directionToLight);
     float attenuation  = 1.0 / dot(directionToLight, directionToLight);
 
-    float netIntensityFactor = light.color.w * diffuseLightFactor * attenuation;
+    float cosAngIncidence = max(dot(surfaceNormal, normalizedDirectionToLight), 0);
 
-    diffuseLight += light.color.xyz * netIntensityFactor;
-    // diffuseLight += light.color.xyz;
+    float netDiffuseIntensityFactor = light.color.w * cosAngIncidence * attenuation;
+    diffuseLight += light.color.xyz * netDiffuseIntensityFactor;
+
+    // Specular light calculation
+    vec3 halfVector = normalize(normalizedDirectionToLight + normalizedViewDirection);
+    float blinnTerm = clamp(dot(surfaceNormal, halfVector), 0, 1);
+    blinnTerm = pow(blinnTerm, 512.0);
+
+    float netSpecularIntensityFactor = light.color.w * attenuation * blinnTerm;
+    specularLight += light.color.xyz * netSpecularIntensityFactor;
   }
 
-  outColor = vec4((diffuseLight * fragColor), 1.0);
+  outColor = vec4((diffuseLight * fragColor + specularLight * fragColor), 1.0);
 }
