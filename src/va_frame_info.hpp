@@ -8,12 +8,19 @@
 
 namespace va {
 
+#define NUM_LIGHTS 10
+
+struct PointLight {
+  glm::vec4 position{};
+  glm::vec4 color{};
+};
+
 struct GlobalUbo {
   glm::mat4 projectionMatrix;
   glm::mat4 viewMatrix;
   glm::vec4 ambientColor{1.f, 1.f, 1.f, .15f};
-  glm::vec4 lightPosition{-1.f, -1.f, -1.f, 1.f};
-  glm::vec4 lightColor{1.f};
+  PointLight pointLights[NUM_LIGHTS];
+  int numLights;
 };
 
 struct FrameInfo {

@@ -2,7 +2,6 @@
 
 #include "va_engine_device.hpp"
 #include "va_frame_info.hpp"
-#include "va_game_object.hpp"
 #include "va_pipeline.hpp"
 
 #define GLM_FORCE_RADIANS
@@ -11,26 +10,27 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-#include "va_camera.hpp"
-
 #include <memory>
 
 namespace va {
 
 class PointLightRenderSystem {
 
-  struct SimplePushConstantData {
-    glm::mat4 modelMatrix{1.f};
-    glm::mat4 normalMatrix{1.f};
+  struct PushConstantData {
+    glm::vec4 position;
+    glm::vec4 color;
+    float radius;
   };
 
 public:
   PointLightRenderSystem(VaDevice &device, VkRenderPass renderPass,
-                     VkDescriptorSetLayout globalSetLayout);
+                         VkDescriptorSetLayout globalSetLayout);
   ~PointLightRenderSystem();
 
   PointLightRenderSystem(const PointLightRenderSystem &) = delete;
   PointLightRenderSystem &operator=(const PointLightRenderSystem &) = delete;
+
+  void update(FrameInfo &frameInfo, GlobalUbo &ubo);
   void render(const FrameInfo &frameInfo);
 
   void run();

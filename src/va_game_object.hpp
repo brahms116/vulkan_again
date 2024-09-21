@@ -19,8 +19,7 @@ struct TransformComponent {
 };
 
 struct PointLightComponent {
-  float lightIntesity{1.f};
-  glm::vec4 color{1.f, 1.f, 1.f, 1.f};
+  glm::vec4 color{1.f, 1.f, 1.f, 1.f}; // w is intensity
 };
 
 class VaGameObject {
@@ -39,7 +38,7 @@ public:
     return VaGameObject(currentId++);
   }
 
-  static VaGameObject makePointLight(float intensity = 10.f, float radius = 0.f,
+  static VaGameObject makePointLight(float radius = 1.f,
                                      glm::vec4 color = glm::vec4(1.f));
 
   const id_t getId() { return id; };

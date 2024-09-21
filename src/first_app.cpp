@@ -8,9 +8,9 @@
 #include "va_model.hpp"
 
 #include <chrono>
+#include <glm/ext/matrix_transform.hpp>
 
 namespace va {
-
 
 FirstApp::FirstApp() {
   globalPool = VaDescriptorPool::Builder(vaDevice)
@@ -42,6 +42,25 @@ void FirstApp::loadGameObjects() {
   floor.transform.translation = {0.f, 0.5f, 0.f};
   floor.transform.scale = glm::vec3(3.f, 1.f, 3.f);
   gameObjects.emplace(floor.getId(), std::move(floor));
+
+  std::vector<glm::vec3> lightColors{
+      {1.f, .1f, .1f}, {.1f, .1f, 1.f}, {.1f, 1.f, .1f},
+      {1.f, 1.f, .1f}, {.1f, 1.f, 1.f}, {1.f, 1.f, 1.f} //
+  };
+
+  for (int i = 0; i < lightColors.size(); i++) {
+    auto pointLight =
+        VaGameObject::makePointLight(1.f, glm::vec4(lightColors[i], .02f));
+
+    auto rotateLight = glm::rotate(
+        glm::mat4(1.f), i * glm::two_pi<float>() / lightColors.size(),
+        {0.f, -1.f, 0.f});
+
+    pointLight.transform.translation =
+        glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+
+    gameObjects.emplace(pointLight.getId(), std::move(pointLight));
+  }
 }
 
 void FirstApp::run() {
@@ -110,11 +129,6 @@ void FirstApp::run() {
     if (auto commandBuffer = vaRenderer.beginFrame()) {
       // Update
       int frameIndex = vaRenderer.getFrameIndex();
-      GlobalUbo ubo{};
-      ubo.projectionMatrix = camera.getProjection();
-      ubo.viewMatrix = camera.getView();
-      uniformBuffers[frameIndex]->writeToBuffer(&ubo);
-      uniformBuffers[frameIndex]->flush();
 
       FrameInfo frameInfo{frameIndex,
                           dt,
@@ -122,6 +136,15 @@ void FirstApp::run() {
                           camera,
                           globalDescriptorSets[frameIndex],
                           gameObjects};
+
+      GlobalUbo ubo{};
+      ubo.projectionMatrix = camera.getProjection();
+      ubo.viewMatrix = camera.getView();
+
+      pointLightRenderSystem.update(frameInfo, ubo);
+
+      uniformBuffers[frameIndex]->writeToBuffer(&ubo);
+      uniformBuffers[frameIndex]->flush();
 
       // Render
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
