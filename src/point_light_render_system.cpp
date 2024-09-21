@@ -62,7 +62,10 @@ void PointLightRenderSystem::update(FrameInfo &frameInfo, GlobalUbo &ubo) {
 
     ubo.pointLights[lightIndex].position =
         glm::vec4(o.transform.translation, 1.f);
+
+    lightIndex++;
   }
+  ubo.numLights = lightIndex;
 }
 
 void PointLightRenderSystem::createPipelineLayout(

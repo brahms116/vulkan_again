@@ -40,6 +40,7 @@ void main() {
     float netIntensityFactor = light.color.w * diffuseLightFactor * attenuation;
 
     diffuseLight += light.color.xyz * netIntensityFactor;
+    // diffuseLight += light.color.xyz;
   }
 
   outColor = vec4((diffuseLight * fragColor), 1.0);
