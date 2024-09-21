@@ -21,7 +21,7 @@ layout(push_constant) uniform Push {
 
 void main() {
   vec3 directionToLight = ubo.lightPosition.xyz - fragPosition;
-  float attenuation =  3.0 / dot(directionToLight, directionToLight);
+  float attenuation =  1.0 / dot(directionToLight, directionToLight);
   vec3 ambientLight = ubo.ambientColor.xyz * ubo.ambientColor.w;
   vec3 pointLight = ubo.lightColor.xyz * ubo.lightColor.w * attenuation;
 
