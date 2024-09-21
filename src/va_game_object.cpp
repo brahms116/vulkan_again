@@ -2,7 +2,7 @@
 
 namespace va {
 
-VaGameObject makePointLight(float radius, glm::vec4 color) {
+VaGameObject VaGameObject::makePointLight(float radius, glm::vec4 color) {
   auto gameObject = VaGameObject::create();
   gameObject.transform.scale.x = radius;
   gameObject.pointLightComponent = std::make_unique<PointLightComponent>(

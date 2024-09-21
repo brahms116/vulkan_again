@@ -8,7 +8,7 @@
 
 namespace va {
 
-#define NUM_LIGHTS 10
+#define MAX_NUM_LIGHTS 10
 
 struct PointLight {
   glm::vec4 position{};
@@ -19,7 +19,7 @@ struct GlobalUbo {
   glm::mat4 projectionMatrix;
   glm::mat4 viewMatrix;
   glm::vec4 ambientColor{1.f, 1.f, 1.f, .15f};
-  PointLight pointLights[NUM_LIGHTS];
+  PointLight pointLights[MAX_NUM_LIGHTS];
   int numLights;
 };
 

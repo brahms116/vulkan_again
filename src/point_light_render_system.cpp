@@ -25,7 +25,23 @@ void PointLightRenderSystem::render(const FrameInfo &frameInfo) {
                           VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1,
                           &frameInfo.descriptorSet, 0, nullptr);
 
-  vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+  for (auto &kv : frameInfo.gameObjects) {
+    auto &obj = kv.second;
+
+    if (obj.pointLightComponent == nullptr)
+      continue;
+
+    PushConstantData push{};
+    push.position = glm::vec4(obj.transform.translation, 1.0f);
+    push.color = obj.pointLightComponent->color;
+    push.radius = obj.transform.scale.x;
+
+    vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout,
+                       VK_SHADER_STAGE_VERTEX_BIT |
+                           VK_SHADER_STAGE_FRAGMENT_BIT,
+                       0, sizeof(PushConstantData), &push);
+    vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+  }
 }
 void PointLightRenderSystem::update(FrameInfo &frameInfo, GlobalUbo &ubo) {
 
