@@ -9,7 +9,6 @@
 
 #include <chrono>
 #include <glm/ext/matrix_transform.hpp>
-#include <iostream>
 
 namespace va {
 
@@ -51,7 +50,7 @@ void FirstApp::loadGameObjects() {
 
   for (int i = 0; i < lightColors.size(); i++) {
     auto pointLight =
-        VaGameObject::makePointLight(.1f, glm::vec4(lightColors[i], 1.f));
+        VaGameObject::makePointLight(.01f, glm::vec4(lightColors[i], .5f));
 
     auto rotateLight = glm::rotate(
         glm::mat4(1.f), i * glm::two_pi<float>() / lightColors.size(),
