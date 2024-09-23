@@ -148,7 +148,8 @@ void VaRenderer::endFrame() {
     throw std::runtime_error("Failed to submit command buffer");
   }
   isFrameStarted = false;
-  currentFrameIndex = (currentFrameIndex + 1) % VaSwapChain::MAX_FRAMES_IN_FLIGHT;
+  currentFrameIndex =
+      (currentFrameIndex + 1) % VaSwapChain::MAX_FRAMES_IN_FLIGHT;
 }
 
 } // namespace va
