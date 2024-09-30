@@ -29,11 +29,12 @@ public:
 
 private:
   VaTexture(VaDevice &device, VkImage image, VkDeviceMemory memory,
-            VkImageView imageView);
+            VkImageView imageView, VkSampler sampler);
 
   VaDevice &vaDevice;
   VkImage image;
   VkDeviceMemory imageMemory;
   VkImageView imageView;
+  VkSampler sampler;
 };
 } // namespace va

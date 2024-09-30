@@ -7,11 +7,12 @@
 
 namespace va {
 VaTexture::VaTexture(VaDevice &vaDevice, VkImage image, VkDeviceMemory memory,
-                     VkImageView imageView)
+                     VkImageView imageView, VkSampler sampler)
     : vaDevice(vaDevice), image(image), imageMemory(memory),
-      imageView(imageView) {}
+      imageView(imageView), sampler(sampler) {}
 
 VaTexture::~VaTexture() {
+  vkDestroySampler(vaDevice.device(), sampler, nullptr);
   vkDestroyImageView(vaDevice.device(), imageView, nullptr);
   vkDestroyImage(vaDevice.device(), image, nullptr);
   vkFreeMemory(vaDevice.device(), imageMemory, nullptr);
@@ -102,7 +103,35 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
     throw std::runtime_error("Could not create image view");
   }
 
-  return VaTexture(vaDevice, image, imageMemory, imageView);
+  VkSampler sampler;
+  VkSamplerCreateInfo samplerInfo;
+  samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+  samplerInfo.magFilter = VK_FILTER_LINEAR;
+  samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+  samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+  samplerInfo.anisotropyEnable = true;
+
+  samplerInfo.maxAnisotropy = vaDevice.properties.limits.maxSamplerAnisotropy;
+  samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+  samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+  samplerInfo.compareEnable = VK_FALSE;
+  samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+
+  samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+  samplerInfo.mipLodBias = 0.0f;
+  samplerInfo.minLod = 0.0f;
+  samplerInfo.maxLod = 0.0f;
+
+  if(vkCreateSampler(vaDevice.device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+    throw std::runtime_error("Could not create image sampler");
+  }
+
+  return VaTexture(vaDevice, image, imageMemory, imageView, sampler);
 }
 
 VaTexture VaTexture::fromFilePath(VaDevice &device,
