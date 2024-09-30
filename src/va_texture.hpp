@@ -28,10 +28,12 @@ public:
                              VkImageLayout newLayout);
 
 private:
-  VaTexture(VaDevice &device, VkImage image, VkDeviceMemory memory);
+  VaTexture(VaDevice &device, VkImage image, VkDeviceMemory memory,
+            VkImageView imageView);
 
   VaDevice &vaDevice;
   VkImage image;
   VkDeviceMemory imageMemory;
+  VkImageView imageView;
 };
 } // namespace va

@@ -6,10 +6,13 @@
 #include <stb_image.h>
 
 namespace va {
-VaTexture::VaTexture(VaDevice &vaDevice, VkImage image, VkDeviceMemory memory)
-    : vaDevice(vaDevice), image(image), imageMemory(memory) {}
+VaTexture::VaTexture(VaDevice &vaDevice, VkImage image, VkDeviceMemory memory,
+                     VkImageView imageView)
+    : vaDevice(vaDevice), image(image), imageMemory(memory),
+      imageView(imageView) {}
 
 VaTexture::~VaTexture() {
+  vkDestroyImageView(vaDevice.device(), imageView, nullptr);
   vkDestroyImage(vaDevice.device(), image, nullptr);
   vkFreeMemory(vaDevice.device(), imageMemory, nullptr);
 };
@@ -81,7 +84,25 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
   vaDevice.createImageWithInfo(imageInfo, properties.memoryProperties, image,
                                imageMemory);
 
-  return VaTexture(vaDevice, image, imageMemory);
+  VkImageView imageView;
+  VkImageViewCreateInfo viewInfo{};
+  viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  viewInfo.image = image;
+  viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+
+  viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  viewInfo.subresourceRange.baseMipLevel = 0;
+  viewInfo.subresourceRange.levelCount = 1;
+  viewInfo.subresourceRange.baseArrayLayer = 0;
+  viewInfo.subresourceRange.layerCount = 1;
+
+  if (vkCreateImageView(vaDevice.device(), &viewInfo, nullptr, &imageView) !=
+      VK_SUCCESS) {
+    throw std::runtime_error("Could not create image view");
+  }
+
+  return VaTexture(vaDevice, image, imageMemory, imageView);
 }
 
 VaTexture VaTexture::fromFilePath(VaDevice &device,
