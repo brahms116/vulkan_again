@@ -1,4 +1,7 @@
 #include "va_texture.hpp"
+#include "va_buffer.hpp"
+
+#include <iostream>
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 
@@ -12,6 +15,7 @@ VaTexture::VaTexture(VaDevice &vaDevice, VkImage image, VkDeviceMemory memory,
       imageView(imageView), sampler(sampler) {}
 
 VaTexture::~VaTexture() {
+  std::cout << "Destroying texture\n";
   vkDestroySampler(vaDevice.device(), sampler, nullptr);
   vkDestroyImageView(vaDevice.device(), imageView, nullptr);
   vkDestroyImage(vaDevice.device(), image, nullptr);
@@ -54,13 +58,13 @@ void VaTexture::transitionImageLayout(VkFormat format, VkImageLayout oldLayout,
 
   VkCommandBuffer commandBuffer = vaDevice.beginSingleTimeCommands();
 
-  vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0,
-                       nullptr, 0, nullptr, 1, &barrier);
+  /* vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, */
+  /*                      nullptr, 0, nullptr, 1, &barrier); */
 
   vaDevice.endSingleTimeCommands(commandBuffer);
 }
 
-VaTexture
+std::unique_ptr<VaTexture>
 VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
                                      const CreateImageProperties &properties) {
 
@@ -98,13 +102,14 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
   viewInfo.subresourceRange.baseArrayLayer = 0;
   viewInfo.subresourceRange.layerCount = 1;
 
-  if (vkCreateImageView(vaDevice.device(), &viewInfo, nullptr, &imageView) !=
-      VK_SUCCESS) {
-    throw std::runtime_error("Could not create image view");
-  }
+  /* if (vkCreateImageView(vaDevice.device(), &viewInfo, nullptr, &imageView) !=
+   */
+  /*     VK_SUCCESS) { */
+  /*   throw std::runtime_error("Could not create image view"); */
+  /* } */
 
   VkSampler sampler;
-  VkSamplerCreateInfo samplerInfo;
+  VkSamplerCreateInfo samplerInfo{};
   samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   samplerInfo.magFilter = VK_FILTER_LINEAR;
   samplerInfo.minFilter = VK_FILTER_LINEAR;
@@ -127,15 +132,17 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
   samplerInfo.minLod = 0.0f;
   samplerInfo.maxLod = 0.0f;
 
-  if(vkCreateSampler(vaDevice.device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+  if (vkCreateSampler(vaDevice.device(), &samplerInfo, nullptr, &sampler) !=
+      VK_SUCCESS) {
     throw std::runtime_error("Could not create image sampler");
   }
 
-  return VaTexture(vaDevice, image, imageMemory, imageView, sampler);
+  return std::make_unique<VaTexture>(vaDevice, image, imageMemory, imageView,
+                                     sampler);
 }
 
-VaTexture VaTexture::fromFilePath(VaDevice &device,
-                                  const std::string &filePath) {
+std::unique_ptr<VaTexture>
+VaTexture::fromFilePath(VaDevice &device, const std::string &filePath) {
   int texWidth, texHeight, texChannels;
 
   stbi_uc *pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight,
@@ -154,14 +161,14 @@ VaTexture VaTexture::fromFilePath(VaDevice &device,
       VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
   createImageProperties.memoryProperties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-  VaTexture texture =
+  auto texture =
       VaTexture::fromCreateImageProperties(device, createImageProperties);
 
-  texture.transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
-                                VK_IMAGE_LAYOUT_UNDEFINED,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
   // Copy to buffer
+
+  texture->transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
+                                 VK_IMAGE_LAYOUT_UNDEFINED,
+                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
   VkDeviceSize imageSize = texWidth * texHeight * 4;
   VaBuffer stagingBuffer =
@@ -172,12 +179,12 @@ VaTexture VaTexture::fromFilePath(VaDevice &device,
   stagingBuffer.map();
   stagingBuffer.writeToBuffer((void *)pixels);
 
-  device.copyBufferToImage(stagingBuffer.getBuffer(), texture.image, texWidth,
+  device.copyBufferToImage(stagingBuffer.getBuffer(), texture->image, texWidth,
                            texHeight, 1);
 
-  texture.transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+  texture->transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
+                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
   return texture;
 }

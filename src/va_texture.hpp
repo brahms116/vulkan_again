@@ -1,7 +1,7 @@
 #pragma once
 
-#include "va_buffer.hpp"
 #include "va_engine_device.hpp"
+#include <memory>
 
 namespace va {
 class VaTexture {
@@ -17,20 +17,25 @@ public:
     VkMemoryPropertyFlags memoryProperties;
   };
 
-  static VaTexture fromFilePath(VaDevice &vaDevice,
-                                const std::string &filePath);
+  VaTexture(const VaTexture &) = delete;
+  VaTexture &operator=(const VaTexture &) = delete;
 
-  static VaTexture
+  VaTexture(VaTexture &&other) = default;
+
+  static std::unique_ptr<VaTexture> fromFilePath(VaDevice &vaDevice,
+                                                 const std::string &filePath);
+
+  static std::unique_ptr<VaTexture>
   fromCreateImageProperties(VaDevice &vaDevice,
                             const CreateImageProperties &properties);
 
   void transitionImageLayout(VkFormat format, VkImageLayout oldLayout,
                              VkImageLayout newLayout);
 
-private:
   VaTexture(VaDevice &device, VkImage image, VkDeviceMemory memory,
             VkImageView imageView, VkSampler sampler);
 
+private:
   VaDevice &vaDevice;
   VkImage image;
   VkDeviceMemory imageMemory;
