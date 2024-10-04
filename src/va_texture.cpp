@@ -25,7 +25,7 @@ VaTexture::~VaTexture() {
 void VaTexture::transitionImageLayout(VkFormat format, VkImageLayout oldLayout,
                                       VkImageLayout newLayout) {
 
-  VkImageMemoryBarrier barrier;
+  VkImageMemoryBarrier barrier{};
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
   barrier.oldLayout = oldLayout;
   barrier.newLayout = newLayout;
@@ -58,8 +58,8 @@ void VaTexture::transitionImageLayout(VkFormat format, VkImageLayout oldLayout,
 
   VkCommandBuffer commandBuffer = vaDevice.beginSingleTimeCommands();
 
-  /* vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, */
-  /*                      nullptr, 0, nullptr, 1, &barrier); */
+  vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0,
+                       nullptr, 0, nullptr, 1, &barrier);
 
   vaDevice.endSingleTimeCommands(commandBuffer);
 }
@@ -102,11 +102,10 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
   viewInfo.subresourceRange.baseArrayLayer = 0;
   viewInfo.subresourceRange.layerCount = 1;
 
-  /* if (vkCreateImageView(vaDevice.device(), &viewInfo, nullptr, &imageView) !=
-   */
-  /*     VK_SUCCESS) { */
-  /*   throw std::runtime_error("Could not create image view"); */
-  /* } */
+   if (vkCreateImageView(vaDevice.device(), &viewInfo, nullptr, &imageView) !=
+       VK_SUCCESS) { 
+    throw std::runtime_error("Could not create image view");
+  }
 
   VkSampler sampler;
   VkSamplerCreateInfo samplerInfo{};

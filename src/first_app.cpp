@@ -6,6 +6,7 @@
 #include "va_buffer.hpp"
 #include "va_frame_info.hpp"
 #include "va_model.hpp"
+#include "va_texture.hpp"
 
 #include <chrono>
 #include <glm/ext/matrix_transform.hpp>
@@ -64,6 +65,8 @@ void FirstApp::loadGameObjects() {
 }
 
 void FirstApp::run() {
+
+  auto texture = VaTexture::fromFilePath(vaDevice, "textures/white.png");
 
   auto globalDescriptorSetLayout =
       VaDescriptorSetLayout::Builder(vaDevice)
