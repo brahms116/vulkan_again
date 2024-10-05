@@ -17,6 +17,8 @@ FirstApp::FirstApp() {
   globalPool = VaDescriptorPool::Builder(vaDevice)
                    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                 VaSwapChain::MAX_FRAMES_IN_FLIGHT)
+                   .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                VaSwapChain::MAX_FRAMES_IN_FLIGHT)
                    .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT)
                    .build();
   loadGameObjects();
@@ -25,7 +27,6 @@ FirstApp::FirstApp() {
 FirstApp::~FirstApp() {}
 
 void FirstApp::loadGameObjects() {
-
 
   std::shared_ptr<VaModel> cubeModel =
       VaModel::createModelFromFile(vaDevice, "models/smooth_vase.obj");
@@ -72,6 +73,8 @@ void FirstApp::run() {
       VaDescriptorSetLayout::Builder(vaDevice)
           .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                       VK_SHADER_STAGE_ALL_GRAPHICS)
+          .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                      VK_SHADER_STAGE_FRAGMENT_BIT)
           .build();
 
   SimpleRenderSystem simpleRenderSystem{
@@ -99,8 +102,10 @@ void FirstApp::run() {
 
   for (int i = 0; i < globalDescriptorSets.size(); i++) {
     auto bufferInfo = uniformBuffers[i]->descriptorInfo();
+    auto imageInfo = whiteTexture.descriptorInfo();
     VaDescriptorWriter(*globalDescriptorSetLayout, *globalPool)
         .writeBuffer(0, &bufferInfo)
+        .writeImage(1, &imageInfo)
         .build(globalDescriptorSets[i]);
   }
 

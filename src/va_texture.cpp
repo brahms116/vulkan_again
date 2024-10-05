@@ -177,4 +177,13 @@ void VaTexture::initializeImage(const CreateImageProperties &properties) {
     throw std::runtime_error("Could not create image sampler");
   }
 }
+
+VkDescriptorImageInfo VaTexture::descriptorInfo() {
+  VkDescriptorImageInfo info{};
+  info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+  info.imageView = imageView;
+  info.sampler = sampler;
+  return info;
+}
+
 } // namespace va
