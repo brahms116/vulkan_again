@@ -67,7 +67,7 @@ void FirstApp::loadGameObjects() {
 }
 
 void FirstApp::run() {
-  auto whiteTexture = VaTexture(vaDevice, "textures/white.png");
+  auto whiteTexture = VaTexture(vaDevice, "textures/red.png");
 
   auto globalDescriptorSetLayout =
       VaDescriptorSetLayout::Builder(vaDevice)

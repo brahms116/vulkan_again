@@ -21,6 +21,8 @@ layout(set=0, binding=0) uniform GlobalUbo {
   int numLights;
 } ubo;
 
+layout(set=0, binding=1) uniform sampler2D texSampler;
+
 layout(push_constant) uniform Push {
   mat4 modelMatrix;
   mat4 normalMatrix;
@@ -58,6 +60,6 @@ void main() {
     specularLight += light.color.xyz * netSpecularIntensityFactor;
   }
 
-  // outColor = vec4((diffuseLight + specularLight) * fragColor, 1.0);
-  outColor = vec4(fragTexCoord, 0.0,1.0);
+  vec4 netLight = vec4((specularLight + diffuseLight), 1.0);
+  outColor = netLight * texture(texSampler, fragTexCoord); 
 }
