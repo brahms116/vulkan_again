@@ -4,6 +4,7 @@
 #include <memory>
 
 namespace va {
+
 class VaTexture {
 public:
   ~VaTexture();
@@ -32,8 +33,8 @@ public:
   void transitionImageLayout(VkFormat format, VkImageLayout oldLayout,
                              VkImageLayout newLayout);
 
-  VaTexture(VaDevice &device, VkImage image, VkDeviceMemory memory,
-            VkImageView imageView, VkSampler sampler);
+  VaTexture(VaDevice &vaDevice, const CreateImageProperties &properties);
+  VaTexture(VaDevice &vaDevice, const std::string &filePath);
 
 private:
   VaDevice &vaDevice;
@@ -41,5 +42,8 @@ private:
   VkDeviceMemory imageMemory;
   VkImageView imageView;
   VkSampler sampler;
+
+  void initializeImage(const CreateImageProperties &properties);
+  void initializeImageFromFile(const std::string &filePath);
 };
 } // namespace va

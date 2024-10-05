@@ -26,6 +26,7 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::loadGameObjects() {
 
+
   std::shared_ptr<VaModel> cubeModel =
       VaModel::createModelFromFile(vaDevice, "models/smooth_vase.obj");
 
@@ -65,8 +66,7 @@ void FirstApp::loadGameObjects() {
 }
 
 void FirstApp::run() {
-
-  auto texture = VaTexture::fromFilePath(vaDevice, "textures/white.png");
+  auto whiteTexture = VaTexture(vaDevice, "textures/white.png");
 
   auto globalDescriptorSetLayout =
       VaDescriptorSetLayout::Builder(vaDevice)

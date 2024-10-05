@@ -9,13 +9,19 @@
 #include <stb_image.h>
 
 namespace va {
-VaTexture::VaTexture(VaDevice &vaDevice, VkImage image, VkDeviceMemory memory,
-                     VkImageView imageView, VkSampler sampler)
-    : vaDevice(vaDevice), image(image), imageMemory(memory),
-      imageView(imageView), sampler(sampler) {}
+
+VaTexture::VaTexture(VaDevice &vaDevice,
+                     const CreateImageProperties &properties)
+    : vaDevice{vaDevice} {
+  initializeImage(properties);
+}
+
+VaTexture::VaTexture(VaDevice &vaDevice, const std::string &filePath)
+    : vaDevice{vaDevice} {
+  initializeImageFromFile(filePath);
+}
 
 VaTexture::~VaTexture() {
-  std::cout << "Destroying texture\n";
   vkDestroySampler(vaDevice.device(), sampler, nullptr);
   vkDestroyImageView(vaDevice.device(), imageView, nullptr);
   vkDestroyImage(vaDevice.device(), image, nullptr);
@@ -64,13 +70,50 @@ void VaTexture::transitionImageLayout(VkFormat format, VkImageLayout oldLayout,
   vaDevice.endSingleTimeCommands(commandBuffer);
 }
 
-std::unique_ptr<VaTexture>
-VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
-                                     const CreateImageProperties &properties) {
+void VaTexture::initializeImageFromFile(const std::string &filePath) {
+  int texWidth, texHeight, texChannels;
 
-  VkImage image;
-  VkDeviceMemory imageMemory;
+  stbi_uc *pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight,
+                              &texChannels, STBI_rgb_alpha);
 
+  if (!pixels) {
+    throw std::runtime_error("failed to load texture image: " + filePath);
+  }
+
+  VaTexture::CreateImageProperties createImageProperties{};
+  createImageProperties.width = texWidth;
+  createImageProperties.height = texHeight;
+  createImageProperties.format = VK_FORMAT_R8G8B8A8_SRGB;
+  createImageProperties.tiling = VK_IMAGE_TILING_OPTIMAL;
+  createImageProperties.imageUsage =
+      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+  createImageProperties.memoryProperties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+  initializeImage(createImageProperties);
+
+  // Copy to buffer
+
+  transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+  VkDeviceSize imageSize = texWidth * texHeight * 4;
+  VaBuffer stagingBuffer =
+      VaBuffer(vaDevice, imageSize, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+  stagingBuffer.map();
+  stagingBuffer.writeToBuffer((void *)pixels);
+
+  vaDevice.copyBufferToImage(stagingBuffer.getBuffer(), image, texWidth,
+                             texHeight, 1);
+
+  transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
+void VaTexture::initializeImage(const CreateImageProperties &properties) {
   VkImageCreateInfo imageInfo{};
   imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
   imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -89,7 +132,6 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
   vaDevice.createImageWithInfo(imageInfo, properties.memoryProperties, image,
                                imageMemory);
 
-  VkImageView imageView;
   VkImageViewCreateInfo viewInfo{};
   viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   viewInfo.image = image;
@@ -102,12 +144,11 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
   viewInfo.subresourceRange.baseArrayLayer = 0;
   viewInfo.subresourceRange.layerCount = 1;
 
-   if (vkCreateImageView(vaDevice.device(), &viewInfo, nullptr, &imageView) !=
-       VK_SUCCESS) { 
+  if (vkCreateImageView(vaDevice.device(), &viewInfo, nullptr, &imageView) !=
+      VK_SUCCESS) {
     throw std::runtime_error("Could not create image view");
   }
 
-  VkSampler sampler;
   VkSamplerCreateInfo samplerInfo{};
   samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -135,56 +176,5 @@ VaTexture::fromCreateImageProperties(VaDevice &vaDevice,
       VK_SUCCESS) {
     throw std::runtime_error("Could not create image sampler");
   }
-
-  return std::make_unique<VaTexture>(vaDevice, image, imageMemory, imageView,
-                                     sampler);
-}
-
-std::unique_ptr<VaTexture>
-VaTexture::fromFilePath(VaDevice &device, const std::string &filePath) {
-  int texWidth, texHeight, texChannels;
-
-  stbi_uc *pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight,
-                              &texChannels, STBI_rgb_alpha);
-
-  if (!pixels) {
-    throw std::runtime_error("failed to load texture image: " + filePath);
-  }
-
-  VaTexture::CreateImageProperties createImageProperties{};
-  createImageProperties.width = texWidth;
-  createImageProperties.height = texHeight;
-  createImageProperties.format = VK_FORMAT_R8G8B8A8_SRGB;
-  createImageProperties.tiling = VK_IMAGE_TILING_OPTIMAL;
-  createImageProperties.imageUsage =
-      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-  createImageProperties.memoryProperties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-
-  auto texture =
-      VaTexture::fromCreateImageProperties(device, createImageProperties);
-
-  // Copy to buffer
-
-  texture->transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
-                                 VK_IMAGE_LAYOUT_UNDEFINED,
-                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-  VkDeviceSize imageSize = texWidth * texHeight * 4;
-  VaBuffer stagingBuffer =
-      VaBuffer(device, imageSize, 1, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-  stagingBuffer.map();
-  stagingBuffer.writeToBuffer((void *)pixels);
-
-  device.copyBufferToImage(stagingBuffer.getBuffer(), texture->image, texWidth,
-                           texHeight, 1);
-
-  texture->transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB,
-                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-  return texture;
 }
 } // namespace va
