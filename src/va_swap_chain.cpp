@@ -26,7 +26,6 @@ VaSwapChain::VaSwapChain(VaDevice &deviceRef, VkExtent2D extent,
 }
 
 void VaSwapChain::init() {
-  setMaxUsableSampleCount();
   createSwapChain();
   createImageViews();
   createRenderPass();
@@ -92,7 +91,7 @@ void VaSwapChain::createColorResources() {
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    imageInfo.samples = msaaSamples;
+    imageInfo.samples = device.msaaSampleCount;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.flags = 0;
 
@@ -113,25 +112,6 @@ void VaSwapChain::createColorResources() {
     if (vkCreateImageView(device.device(), &viewInfo, nullptr,
                           &colorImageViews[i]) != VK_SUCCESS) {
       throw std::runtime_error("failed to create texture image view!");
-    }
-  }
-}
-
-void VaSwapChain::setMaxUsableSampleCount() {
-  VkSampleCountFlags counts =
-      device.properties.limits.framebufferColorSampleCounts &
-      device.properties.limits.framebufferDepthSampleCounts;
-
-  const VkSampleCountFlagBits sampleBits[] = {
-      VK_SAMPLE_COUNT_64_BIT, VK_SAMPLE_COUNT_32_BIT, VK_SAMPLE_COUNT_16_BIT,
-      VK_SAMPLE_COUNT_8_BIT,  VK_SAMPLE_COUNT_4_BIT,  VK_SAMPLE_COUNT_2_BIT,
-      VK_SAMPLE_COUNT_1_BIT,
-  };
-
-  for (const auto sampleBit : sampleBits) {
-    if (counts & sampleBit) {
-      msaaSamples = sampleBit;
-      break;
     }
   }
 }
@@ -291,7 +271,7 @@ void VaSwapChain::createImageViews() {
 void VaSwapChain::createRenderPass() {
   VkAttachmentDescription depthAttachment{};
   depthAttachment.format = findDepthFormat();
-  depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+  depthAttachment.samples = device.msaaSampleCount;
   depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -306,16 +286,30 @@ void VaSwapChain::createRenderPass() {
 
   VkAttachmentDescription colorAttachment = {};
   colorAttachment.format = getSwapChainImageFormat();
-  colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+  colorAttachment.samples = device.msaaSampleCount;
   colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
   colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
   VkAttachmentReference colorAttachmentRef = {};
   colorAttachmentRef.attachment = 0;
+  colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  VkAttachmentDescription colorAttachmentResolve{};
+  colorAttachmentResolve.format = getSwapChainImageFormat();
+  colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+  colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+  VkAttachmentReference colorAttachmentResolveRef = {};
+  colorAttachmentRef.attachment = 2;
   colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
   VkSubpassDescription subpass = {};
@@ -323,6 +317,7 @@ void VaSwapChain::createRenderPass() {
   subpass.colorAttachmentCount = 1;
   subpass.pColorAttachments = &colorAttachmentRef;
   subpass.pDepthStencilAttachment = &depthAttachmentRef;
+  subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
   VkSubpassDependency dependency = {};
   dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -335,8 +330,9 @@ void VaSwapChain::createRenderPass() {
   dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
                              VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-  std::array<VkAttachmentDescription, 2> attachments = {colorAttachment,
-                                                        depthAttachment};
+  std::array<VkAttachmentDescription, 3> attachments = {
+      colorAttachment, depthAttachment, colorAttachmentResolve};
+
   VkRenderPassCreateInfo renderPassInfo = {};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -355,8 +351,11 @@ void VaSwapChain::createRenderPass() {
 void VaSwapChain::createFramebuffers() {
   swapChainFramebuffers.resize(imageCount());
   for (size_t i = 0; i < imageCount(); i++) {
-    std::array<VkImageView, 2> attachments = {swapChainImageViews[i],
-                                              depthImageViews[i]};
+    std::array<VkImageView, 3> attachments = {
+        colorImageViews[i],
+        depthImageViews[i],
+        swapChainImageViews[i],
+    };
 
     VkExtent2D swapChainExtent = getSwapChainExtent();
     VkFramebufferCreateInfo framebufferInfo = {};

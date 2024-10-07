@@ -90,6 +90,9 @@ void VaPipeline::createGraphicsPipeline(
       .pVertexAttributeDescriptions = attributeDescriptions.data(),
   };
 
+  auto multisampleInfo = configInfo.multisampleInfo;
+  multisampleInfo.rasterizationSamples = vaDevice.msaaSampleCount;
+
   VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
       .stageCount = 2,
@@ -98,7 +101,7 @@ void VaPipeline::createGraphicsPipeline(
       .pInputAssemblyState = &configInfo.inputAssemblyInfo,
       .pViewportState = &configInfo.viewportInfo,
       .pRasterizationState = &configInfo.rasterizationInfo,
-      .pMultisampleState = &configInfo.multisampleInfo,
+      .pMultisampleState = &multisampleInfo,
       .pDepthStencilState = &configInfo.depthStencilInfo,
       .pColorBlendState = &configInfo.colorBlendInfo,
       .pDynamicState = &configInfo.dynamicStateInfo,
