@@ -26,9 +26,11 @@ VaSwapChain::VaSwapChain(VaDevice &deviceRef, VkExtent2D extent,
 }
 
 void VaSwapChain::init() {
+  setMaxUsableSampleCount();
   createSwapChain();
   createImageViews();
   createRenderPass();
+  createColorResources();
   createDepthResources();
   createFramebuffers();
   createSyncObjects();
@@ -43,6 +45,12 @@ VaSwapChain::~VaSwapChain() {
   if (swapChain != nullptr) {
     vkDestroySwapchainKHR(device.device(), swapChain, nullptr);
     swapChain = nullptr;
+  }
+
+  for (int i = 0; i < colorImages.size(); i++) {
+    vkDestroyImageView(device.device(), colorImageViews[i], nullptr);
+    vkDestroyImage(device.device(), colorImages[i], nullptr);
+    vkFreeMemory(device.device(), colorImageMemoryHandles[i], nullptr);
   }
 
   for (int i = 0; i < depthImages.size(); i++) {
@@ -62,6 +70,50 @@ VaSwapChain::~VaSwapChain() {
     vkDestroySemaphore(device.device(), renderFinishedSemaphores[i], nullptr);
     vkDestroySemaphore(device.device(), imageAvailableSemaphores[i], nullptr);
     vkDestroyFence(device.device(), inFlightFences[i], nullptr);
+  }
+}
+
+void VaSwapChain::createColorResources() {
+
+  colorImages.resize(imageCount());
+  colorImageMemoryHandles.resize(imageCount());
+  colorImageViews.resize(imageCount());
+
+  for (int i = 0; i < colorImages.size(); i++) {
+    VkImageCreateInfo imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = swapChainExtent.width;
+    imageInfo.extent.height = swapChainExtent.height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = swapChainImageFormat;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    imageInfo.samples = msaaSamples;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.flags = 0;
+
+    device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                               colorImages[i], colorImageMemoryHandles[i]);
+
+    VkImageViewCreateInfo viewInfo{};
+    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewInfo.image = colorImages[i];
+    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.format = swapChainImageFormat;
+    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
+
+    if (vkCreateImageView(device.device(), &viewInfo, nullptr,
+                          &colorImageViews[i]) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create texture image view!");
+    }
   }
 }
 
