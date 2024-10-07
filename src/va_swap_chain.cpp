@@ -65,6 +65,25 @@ VaSwapChain::~VaSwapChain() {
   }
 }
 
+void VaSwapChain::setMaxUsableSampleCount() {
+  VkSampleCountFlags counts =
+      device.properties.limits.framebufferColorSampleCounts &
+      device.properties.limits.framebufferDepthSampleCounts;
+
+  const VkSampleCountFlagBits sampleBits[] = {
+      VK_SAMPLE_COUNT_64_BIT, VK_SAMPLE_COUNT_32_BIT, VK_SAMPLE_COUNT_16_BIT,
+      VK_SAMPLE_COUNT_8_BIT,  VK_SAMPLE_COUNT_4_BIT,  VK_SAMPLE_COUNT_2_BIT,
+      VK_SAMPLE_COUNT_1_BIT,
+  };
+
+  for (const auto sampleBit : sampleBits) {
+    if (counts & sampleBit) {
+      msaaSamples = sampleBit;
+      break;
+    }
+  }
+}
+
 VkResult VaSwapChain::acquireNextImage(uint32_t *imageIndex) {
   vkWaitForFences(device.device(), 1, &inFlightFences[currentFrame], VK_TRUE,
                   std::numeric_limits<uint64_t>::max());

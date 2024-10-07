@@ -55,10 +55,13 @@ private:
   void init();
   void createSwapChain();
   void createImageViews();
+  void createColorResources();
   void createDepthResources();
   void createRenderPass();
   void createFramebuffers();
   void createSyncObjects();
+
+  void setMaxUsableSampleCount();
 
   // Helper functions
   VkSurfaceFormatKHR chooseSwapSurfaceFormat(
@@ -79,6 +82,8 @@ private:
   std::vector<VkImageView> depthImageViews;
   std::vector<VkImage> swapChainImages;
   std::vector<VkImageView> swapChainImageViews;
+
+  VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
   VaDevice &device;
   VkExtent2D windowExtent;
