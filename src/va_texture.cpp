@@ -178,7 +178,7 @@ void VaTexture::initializeImage(const CreateImageProperties &properties) {
   }
 }
 
-VkDescriptorImageInfo VaTexture::descriptorInfo() {
+VkDescriptorImageInfo VaTexture::descriptorInfo() const {
   VkDescriptorImageInfo info{};
   info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
   info.imageView = imageView;

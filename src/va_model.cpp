@@ -8,7 +8,6 @@
 #include "tiny_obj_loader.h"
 #include <vulkan/vulkan_core.h>
 
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
@@ -33,20 +32,21 @@ template <> struct hash<va::VaModel::Vertex> {
 
 namespace va {
 
-VaModel::VaModel(VaDevice &device, const VaModel::Builder &builder)
-    : vaDevice{device} {
+VaModel::VaModel(VaDevice &device, const VaModel::Builder &builder,
+                 const VaTexture &vaTexture)
+    : vaDevice{device}, vaTexture(vaTexture) {
   createVertexBuffer(builder.vertices);
   createIndexBuffer(builder.indices);
 };
 
 std::unique_ptr<VaModel>
-VaModel::createModelFromFile(VaDevice &device, const std::string &filepath) {
+VaModel::createModelFromFile(VaDevice &device, const std::string &filepath, const VaTexture &vaTexture) {
   Builder builder{};
   builder.loadModel(filepath);
 
   std::cout << "Vertex count: " << builder.vertices.size() << '\n';
 
-  return std::make_unique<VaModel>(device, builder);
+  return std::make_unique<VaModel>(device, builder, vaTexture);
 }
 
 VaModel::~VaModel(){};

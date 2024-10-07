@@ -2,6 +2,8 @@
 
 #include "va_buffer.hpp"
 #include "va_engine_device.hpp"
+#include "va_texture.hpp"
+
 #include <memory>
 
 #define GLM_FORCE_RADIANS
@@ -36,17 +38,21 @@ public:
     void loadModel(const std::string &filepath);
   };
 
-  VaModel(VaDevice &vaDevice, const Builder &builder);
+  VaModel(VaDevice &vaDevice, const Builder &builder,
+          const VaTexture &vaTexture);
   ~VaModel();
 
   static std::unique_ptr<VaModel>
-  createModelFromFile(VaDevice &device, const std::string &filepath);
+  createModelFromFile(VaDevice &device, const std::string &filepath,
+                      const VaTexture &vaTexture);
 
   VaModel(const VaModel &) = delete;
   VaModel &operator=(const VaModel &) = delete;
 
   void bindCommandBuffer(VkCommandBuffer commandBuffer) const;
   void draw(VkCommandBuffer commandBuffer) const;
+  
+  const VaTexture &vaTexture;
 
 private:
   bool hasIndexBuffer;
@@ -56,11 +62,11 @@ private:
 
   VaDevice &vaDevice;
 
+
   std::unique_ptr<VaBuffer> vaVertexBuffer;
   uint32_t vertexCount;
 
   std::unique_ptr<VaBuffer> vaIndexBuffer;
   uint32_t indexCount;
-
 };
 } // namespace va

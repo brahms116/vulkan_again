@@ -34,6 +34,9 @@ private:
   VaDevice vaDevice{vaWindow};
   VaRenderer vaRenderer{vaWindow, vaDevice};
 
+  VaTexture defaultTexture{vaDevice, "textures/white.png"};
+  VaTexture floorTexture{vaDevice, "textures/red.png"};
+
   std::unique_ptr<VaDescriptorPool> globalPool;
   VaGameObject::Map gameObjects;
 };

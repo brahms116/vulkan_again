@@ -1,6 +1,7 @@
 #pragma once
 
 #include "va_camera.hpp"
+#include "va_descriptors.hpp"
 #include "va_game_object.hpp"
 
 // lib
@@ -30,6 +31,8 @@ struct FrameInfo {
   VkCommandBuffer commandBuffer;
   VaCamera &camera;
   VkDescriptorSet descriptorSet;
+  VkDescriptorSet textureDescriptorSet;
+  VaDescriptorWriter writer;
   VaGameObject::Map &gameObjects;
 };
 } // namespace va

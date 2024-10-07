@@ -19,7 +19,7 @@ FirstApp::FirstApp() {
                                 VaSwapChain::MAX_FRAMES_IN_FLIGHT)
                    .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                 VaSwapChain::MAX_FRAMES_IN_FLIGHT)
-                   .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT)
+                   .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT * 2)
                    .build();
   loadGameObjects();
 }
@@ -28,11 +28,11 @@ FirstApp::~FirstApp() {}
 
 void FirstApp::loadGameObjects() {
 
-  std::shared_ptr<VaModel> cubeModel =
-      VaModel::createModelFromFile(vaDevice, "models/smooth_vase.obj");
+  std::shared_ptr<VaModel> cubeModel = VaModel::createModelFromFile(
+      vaDevice, "models/smooth_vase.obj", defaultTexture);
 
   std::shared_ptr<VaModel> floorModel =
-      VaModel::createModelFromFile(vaDevice, "models/quad.obj");
+      VaModel::createModelFromFile(vaDevice, "models/quad.obj", floorTexture);
 
   auto thing = VaGameObject::create();
   thing.model = cubeModel;
@@ -67,19 +67,22 @@ void FirstApp::loadGameObjects() {
 }
 
 void FirstApp::run() {
-  auto whiteTexture = VaTexture(vaDevice, "textures/red.png");
-
   auto globalDescriptorSetLayout =
       VaDescriptorSetLayout::Builder(vaDevice)
           .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                       VK_SHADER_STAGE_ALL_GRAPHICS)
-          .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          .build();
+
+  auto textureDescriptorSetLayout =
+      VaDescriptorSetLayout::Builder(vaDevice)
+          .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                       VK_SHADER_STAGE_FRAGMENT_BIT)
           .build();
 
   SimpleRenderSystem simpleRenderSystem{
       vaDevice, vaRenderer.getSwapChainRenderPass(),
-      globalDescriptorSetLayout->getDescriptorSetLayout()};
+      globalDescriptorSetLayout->getDescriptorSetLayout(),
+      textureDescriptorSetLayout->getDescriptorSetLayout()};
 
   PointLightRenderSystem pointLightRenderSystem{
       vaDevice, vaRenderer.getSwapChainRenderPass(),
@@ -100,12 +103,18 @@ void FirstApp::run() {
   std::vector<VkDescriptorSet> globalDescriptorSets(
       VaSwapChain::MAX_FRAMES_IN_FLIGHT);
 
+  std::vector<VkDescriptorSet> textureDescriptorSets(
+      VaSwapChain::MAX_FRAMES_IN_FLIGHT);
+
+  auto textureDescriptorWriter =
+      VaDescriptorWriter(*textureDescriptorSetLayout, *globalPool);
+
   for (int i = 0; i < globalDescriptorSets.size(); i++) {
+    textureDescriptorWriter.build(textureDescriptorSets[i]);
+
     auto bufferInfo = uniformBuffers[i]->descriptorInfo();
-    auto imageInfo = whiteTexture.descriptorInfo();
     VaDescriptorWriter(*globalDescriptorSetLayout, *globalPool)
         .writeBuffer(0, &bufferInfo)
-        .writeImage(1, &imageInfo)
         .build(globalDescriptorSets[i]);
   }
 
@@ -143,6 +152,8 @@ void FirstApp::run() {
                           commandBuffer,
                           camera,
                           globalDescriptorSets[frameIndex],
+                          textureDescriptorSets[frameIndex],
+                          textureDescriptorWriter,
                           gameObjects};
 
       GlobalUbo ubo{};

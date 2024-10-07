@@ -26,18 +26,20 @@ class SimpleRenderSystem {
 
 public:
   SimpleRenderSystem(VaDevice &device, VkRenderPass renderPass,
-                     VkDescriptorSetLayout globalSetLayout);
+                     VkDescriptorSetLayout globalSetLayout,
+                     VkDescriptorSetLayout textureLayout);
   ~SimpleRenderSystem();
 
   SimpleRenderSystem(const SimpleRenderSystem &) = delete;
   SimpleRenderSystem &operator=(const SimpleRenderSystem &) = delete;
-  void renderGameObjects(const FrameInfo &frameInfo);
+  void renderGameObjects(FrameInfo &frameInfo);
 
   void run();
 
 private:
   void loadGameObjects();
-  void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+  void createPipelineLayout(VkDescriptorSetLayout globalSetLayout,
+                            VkDescriptorSetLayout textureSetLayout);
   void createPipeline(VkRenderPass);
 
   VaDevice &vaDevice;

@@ -199,6 +199,7 @@ void VaDescriptorWriter::overwrite(VkDescriptorSet &set) {
   }
   vkUpdateDescriptorSets(pool.vaDevice.device(), writes.size(), writes.data(),
                          0, nullptr);
+  writes.clear();
 }
 
 } // namespace va

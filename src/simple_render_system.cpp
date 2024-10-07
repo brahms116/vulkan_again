@@ -1,5 +1,6 @@
 #include "simple_render_system.hpp"
 
+#include <array>
 #include <cmath>
 #include <stdexcept>
 
@@ -7,9 +8,10 @@ namespace va {
 
 SimpleRenderSystem::SimpleRenderSystem(VaDevice &device,
                                        VkRenderPass renderPass,
-                                       VkDescriptorSetLayout globalSetLayout)
+                                       VkDescriptorSetLayout globalSetLayout,
+                                       VkDescriptorSetLayout textureSetLayout)
     : vaDevice{device} {
-  createPipelineLayout(globalSetLayout);
+  createPipelineLayout(globalSetLayout, textureSetLayout);
   createPipeline(renderPass);
 }
 
@@ -17,7 +19,7 @@ SimpleRenderSystem::~SimpleRenderSystem() {
   vkDestroyPipelineLayout(vaDevice.device(), pipelineLayout, nullptr);
 }
 
-void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) {
+void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo) {
   vaPipeline->bindCommandBuffer(frameInfo.commandBuffer);
 
   vkCmdBindDescriptorSets(frameInfo.commandBuffer,
@@ -30,6 +32,15 @@ void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) {
 
     if (object.model == nullptr)
       continue;
+
+    auto textureInfo = object.model->vaTexture.descriptorInfo();
+
+    frameInfo.writer.writeImage(0, &textureInfo)
+        .overwrite(frameInfo.textureDescriptorSet);
+
+    vkCmdBindDescriptorSets(frameInfo.commandBuffer,
+                            VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1,
+                            1, &frameInfo.textureDescriptorSet, 0, nullptr);
 
     SimplePushConstantData push{};
     /* object.transform.scale.x = */
@@ -48,16 +59,20 @@ void SimpleRenderSystem::renderGameObjects(const FrameInfo &frameInfo) {
 }
 
 void SimpleRenderSystem::createPipelineLayout(
-    VkDescriptorSetLayout globalSetLayout) {
+    VkDescriptorSetLayout globalSetLayout,
+    VkDescriptorSetLayout textureSetLayout) {
   VkPushConstantRange push{};
   push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
   push.offset = 0;
   push.size = sizeof(SimplePushConstantData);
 
+  std::array<VkDescriptorSetLayout, 2> descriptorSets = {globalSetLayout,
+                                                         textureSetLayout};
+
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .setLayoutCount = 1,
-      .pSetLayouts = &globalSetLayout,
+      .setLayoutCount = static_cast<uint32_t>(descriptorSets.size()),
+      .pSetLayouts = descriptorSets.data(),
       .pushConstantRangeCount = 1,
       .pPushConstantRanges = &push};
 

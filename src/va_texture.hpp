@@ -33,7 +33,7 @@ public:
   void transitionImageLayout(VkFormat format, VkImageLayout oldLayout,
                              VkImageLayout newLayout);
 
-  VkDescriptorImageInfo descriptorInfo();
+  VkDescriptorImageInfo descriptorInfo() const;
 
   VaTexture(VaDevice &vaDevice, const CreateImageProperties &properties);
   VaTexture(VaDevice &vaDevice, const std::string &filePath);
