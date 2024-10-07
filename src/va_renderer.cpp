@@ -40,7 +40,6 @@ void VaRenderer::recreateSwapChain() {
       throw std::runtime_error("SwapChain formats incompatible");
     }
   }
-  /* createPipeline(); */
 }
 
 void VaRenderer::createCommandBuffers() {
