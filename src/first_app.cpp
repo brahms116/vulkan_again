@@ -162,9 +162,8 @@ void FirstApp::run() {
       vaRenderer.endSwapChainRenderPass(commandBuffer);
       vaRenderer.endFrame();
     };
-
-    vkDeviceWaitIdle(vaDevice.device());
   }
+  vkDeviceWaitIdle(vaDevice.device());
 }
 
 } // namespace va
