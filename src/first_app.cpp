@@ -17,9 +17,8 @@ FirstApp::FirstApp() {
   globalPool = VaDescriptorPool::Builder(vaDevice)
                    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                 VaSwapChain::MAX_FRAMES_IN_FLIGHT)
-                   .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                VaSwapChain::MAX_FRAMES_IN_FLIGHT)
-                   .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+                   .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2)
+                   .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT + 2)
                    .build();
 }
 
