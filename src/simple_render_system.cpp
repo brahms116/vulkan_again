@@ -33,14 +33,9 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo) {
     if (object.model == nullptr)
       continue;
 
-    auto textureInfo = object.model->vaTexture.descriptorInfo();
-
-    frameInfo.writer.writeImage(0, &textureInfo)
-        .overwrite(frameInfo.textureDescriptorSet);
-
     vkCmdBindDescriptorSets(frameInfo.commandBuffer,
                             VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1,
-                            1, &frameInfo.textureDescriptorSet, 0, nullptr);
+                            1, &object.model->textureDescriptor, 0, nullptr);
 
     SimplePushConstantData push{};
     /* object.transform.scale.x = */

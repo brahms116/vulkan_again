@@ -39,20 +39,20 @@ public:
   };
 
   VaModel(VaDevice &vaDevice, const Builder &builder,
-          const VaTexture &vaTexture);
+          const VkDescriptorSet textureDescriptor);
   ~VaModel();
 
   static std::unique_ptr<VaModel>
   createModelFromFile(VaDevice &device, const std::string &filepath,
-                      const VaTexture &vaTexture);
+                      const VkDescriptorSet textureDescriptor);
 
   VaModel(const VaModel &) = delete;
   VaModel &operator=(const VaModel &) = delete;
 
   void bindCommandBuffer(VkCommandBuffer commandBuffer) const;
   void draw(VkCommandBuffer commandBuffer) const;
-  
-  const VaTexture &vaTexture;
+
+  const VkDescriptorSet textureDescriptor;
 
 private:
   bool hasIndexBuffer;
@@ -61,7 +61,6 @@ private:
   void createIndexBuffer(const std::vector<uint32_t> &indices);
 
   VaDevice &vaDevice;
-
 
   std::unique_ptr<VaBuffer> vaVertexBuffer;
   uint32_t vertexCount;

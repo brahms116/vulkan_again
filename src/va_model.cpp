@@ -33,20 +33,20 @@ template <> struct hash<va::VaModel::Vertex> {
 namespace va {
 
 VaModel::VaModel(VaDevice &device, const VaModel::Builder &builder,
-                 const VaTexture &vaTexture)
-    : vaDevice{device}, vaTexture(vaTexture) {
+                 const VkDescriptorSet textureDescriptor)
+    : vaDevice{device}, textureDescriptor(textureDescriptor) {
   createVertexBuffer(builder.vertices);
   createIndexBuffer(builder.indices);
 };
 
 std::unique_ptr<VaModel>
-VaModel::createModelFromFile(VaDevice &device, const std::string &filepath, const VaTexture &vaTexture) {
+VaModel::createModelFromFile(VaDevice &device, const std::string &filepath,
+                             const VkDescriptorSet textureDescriptor) {
   Builder builder{};
   builder.loadModel(filepath);
 
   std::cout << "Vertex count: " << builder.vertices.size() << '\n';
-
-  return std::make_unique<VaModel>(device, builder, vaTexture);
+  return std::make_unique<VaModel>(device, builder, textureDescriptor);
 }
 
 VaModel::~VaModel(){};

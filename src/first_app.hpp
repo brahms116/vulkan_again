@@ -28,7 +28,8 @@ public:
   void run();
 
 private:
-  void loadGameObjects();
+  void loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
+                       const VkDescriptorSet floorTextureDescriptor);
 
   VaWindow vaWindow{WIDTH, HEIGHT, "helloworld"};
   VaDevice vaDevice{vaWindow};
