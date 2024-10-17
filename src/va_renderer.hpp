@@ -35,6 +35,14 @@ public:
     return vaSwapChain->getRenderPass();
   }
 
+  VkExtent2D getSwapChainExtent() const {
+    return vaSwapChain->getSwapChainExtent();
+  }
+
+  VkFormat getSwapChainDepthFormat() const {
+    return vaSwapChain->getSwapChainDepthFormat();
+  }
+
   float getAspectRatio() const { return vaSwapChain->extentAspectRatio(); }
 
   VkCommandBuffer beginFrame();
@@ -48,7 +56,6 @@ public:
     return currentFrameIndex;
   }
 
-  std::unique_ptr<VaSwapChain> vaSwapChain;
 
 private:
   void createCommandBuffers();
@@ -61,6 +68,7 @@ private:
   bool isFrameStarted{false};
   int currentFrameIndex{0};
 
+  std::unique_ptr<VaSwapChain> vaSwapChain;
   std::vector<VkCommandBuffer> commandBuffers;
 };
 } // namespace va

@@ -2,12 +2,12 @@
 
 #include "keyboard_movement_controller.hpp"
 #include "point_light_render_system.hpp"
+#include "shadow_map_render_system.hpp"
 #include "simple_render_system.hpp"
 #include "va_buffer.hpp"
 #include "va_frame_info.hpp"
 #include "va_model.hpp"
 #include "va_texture.hpp"
-#include "shadow_map_render_system.hpp"
 
 #include <chrono>
 #include <glm/ext/matrix_transform.hpp>
@@ -82,8 +82,8 @@ void FirstApp::run() {
   loadGameObjects(defaultTextureDescriptorSet, floorTextureDescriptorSet);
 
   ShadowMapRenderSystem shadowRenderSystem{
-    vaDevice, *vaRenderer.vaSwapChain
-  };
+      vaDevice, vaRenderer.getSwapChainExtent(),
+      vaRenderer.getSwapChainDepthFormat()};
 
   SimpleRenderSystem simpleRenderSystem{
       vaDevice, vaRenderer.getSwapChainRenderPass(),
