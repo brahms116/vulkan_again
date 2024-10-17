@@ -48,6 +48,8 @@ public:
     return currentFrameIndex;
   }
 
+  std::unique_ptr<VaSwapChain> vaSwapChain;
+
 private:
   void createCommandBuffers();
   void recreateSwapChain();
@@ -59,7 +61,6 @@ private:
   bool isFrameStarted{false};
   int currentFrameIndex{0};
 
-  std::unique_ptr<VaSwapChain> vaSwapChain;
   std::vector<VkCommandBuffer> commandBuffers;
 };
 } // namespace va

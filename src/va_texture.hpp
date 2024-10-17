@@ -2,6 +2,7 @@
 
 #include "va_engine_device.hpp"
 #include <memory>
+#include <vulkan/vulkan_core.h>
 
 namespace va {
 
@@ -16,6 +17,7 @@ public:
     VkImageTiling tiling;
     VkImageUsageFlags imageUsage;
     VkMemoryPropertyFlags memoryProperties;
+    VkImageAspectFlags imageAspectFlags;
   };
 
   VaTexture(const VaTexture &) = delete;
