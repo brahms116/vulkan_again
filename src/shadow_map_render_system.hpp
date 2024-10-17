@@ -7,8 +7,7 @@ namespace va {
 class ShadowMapRenderSystem {
 
 public:
-  ShadowMapRenderSystem(VaDevice &vaDevice, VkExtent2D swapChainExtent,
-                        VkFormat swapChainDepthFormat);
+  ShadowMapRenderSystem(VaDevice &vaDevice, VkExtent2D swapChainExtent);
 
 private:
   VaDevice &vaDevice;

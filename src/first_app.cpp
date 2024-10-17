@@ -82,8 +82,9 @@ void FirstApp::run() {
   loadGameObjects(defaultTextureDescriptorSet, floorTextureDescriptorSet);
 
   ShadowMapRenderSystem shadowRenderSystem{
-      vaDevice, vaRenderer.getSwapChainExtent(),
-      vaRenderer.getSwapChainDepthFormat()};
+      vaDevice,
+      vaRenderer.getSwapChainExtent(),
+  };
 
   SimpleRenderSystem simpleRenderSystem{
       vaDevice, vaRenderer.getSwapChainRenderPass(),
