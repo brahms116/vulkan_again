@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "va_engine_device.hpp"
 
@@ -39,6 +40,9 @@ public:
              const std::string &fragmentShaderFilePath,
              const PipelineConfigInfo &configInfo);
 
+  VaPipeline(VaDevice &device, const std::string &vertexShaderFilePath,
+             const PipelineConfigInfo &configInfo);
+
   ~VaPipeline();
 
   VaPipeline(const VaPipeline &) = delete;
@@ -51,8 +55,8 @@ public:
 private:
   static std::vector<char> readFile(const std::string &filePath);
 
-  void createGraphicsPipeline(const std::string &vertexShaderFilePath,
-                              const std::string &fragmentShaderFilePath,
+  void createGraphicsPipeline(const std::optional<std::string> vertexShaderFilePath,
+                              const std::optional<std::string> fragmentShaderFilePath,
                               const PipelineConfigInfo &configInfo);
 
   VaDevice &vaDevice;

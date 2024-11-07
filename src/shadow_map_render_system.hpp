@@ -9,14 +9,14 @@ class ShadowMapRenderSystem {
 public:
   ShadowMapRenderSystem(VaDevice &vaDevice, VkExtent2D shadowMapExtent);
 
+  ~ShadowMapRenderSystem();
+
 private:
   VkExtent2D shadowMapExtent;
   VaDevice &vaDevice;
   VkFramebuffer framebuffer;
   VaTexture depthImage;
   VkRenderPass renderPass;
-  VaPipeline pipeline;
-
 
   void initializeRenderPass();
   void initializeFramebuffer();

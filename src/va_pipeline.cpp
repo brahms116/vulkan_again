@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 
 namespace va {
@@ -14,6 +15,13 @@ VaPipeline::VaPipeline(VaDevice &device,
     : vaDevice{device} {
   createGraphicsPipeline(vertexShaderFilePath, fragmentShaderFilePath,
                          configInfo);
+}
+
+VaPipeline::VaPipeline(VaDevice &device,
+                       const std::string &vertexShaderFilePath,
+                       const PipelineConfigInfo &configInfo)
+    : vaDevice{device} {
+  createGraphicsPipeline(vertexShaderFilePath, std::nullopt, configInfo);
 }
 
 VaPipeline::~VaPipeline() {
@@ -47,35 +55,35 @@ std::vector<char> VaPipeline::readFile(const std::string &filePath) {
 };
 
 void VaPipeline::createGraphicsPipeline(
-    const std::string &vertexShaderFilePath,
-    const std::string &fragmentShaderFilePath,
+    const std::optional<std::string> vertexShaderFilePath,
+    const std::optional<std::string> fragmentShaderFilePath,
     const PipelineConfigInfo &configInfo) {
-  auto vertCode = readFile(vertexShaderFilePath);
-  auto fragCode = readFile(fragmentShaderFilePath);
 
-  createShaderModule(vertCode, &vertShaderModule);
-  createShaderModule(fragCode, &fragShaderModule);
+  std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-  VkPipelineShaderStageCreateInfo shaderStages[2];
-  shaderStages[0] = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-      .stage = VK_SHADER_STAGE_VERTEX_BIT,
-      .module = vertShaderModule,
-      .pName = "main",
-      .pSpecializationInfo = nullptr,
-  };
+  if (vertexShaderFilePath.has_value()) {
+    auto vertCode = readFile(vertexShaderFilePath.value());
+    createShaderModule(vertCode, &vertShaderModule);
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = VK_SHADER_STAGE_VERTEX_BIT,
+        .module = vertShaderModule,
+        .pName = "main",
+    };
+    shaderStages.push_back(vertShaderStageInfo);
+  }
 
-  shaderStages[1] = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-      .pNext = nullptr,
-      .flags = 0,
-      .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-      .module = fragShaderModule,
-      .pName = "main",
-      .pSpecializationInfo = nullptr,
-  };
+  if (fragmentShaderFilePath.has_value()) {
+    auto fragCode = readFile(fragmentShaderFilePath.value());
+    createShaderModule(fragCode, &fragShaderModule);
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .module = fragShaderModule,
+        .pName = "main",
+    };
+    shaderStages.push_back(fragShaderStageInfo);
+  }
 
   auto &bindingDescriptions = configInfo.bindingDescriptions;
   auto &attributeDescriptions = configInfo.attributeDescriptions;
@@ -95,8 +103,8 @@ void VaPipeline::createGraphicsPipeline(
 
   VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-      .stageCount = 2,
-      .pStages = shaderStages,
+      .stageCount = static_cast<uint32_t>(shaderStages.size()),
+      .pStages = shaderStages.data(),
       .pVertexInputState = &vertexInputInfo,
       .pInputAssemblyState = &configInfo.inputAssemblyInfo,
       .pViewportState = &configInfo.viewportInfo,

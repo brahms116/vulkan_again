@@ -18,6 +18,11 @@ ShadowMapRenderSystem::ShadowMapRenderSystem(VaDevice &vaDevice,
   initializeFramebuffer();
 }
 
+ShadowMapRenderSystem::~ShadowMapRenderSystem() {
+  vkDestroyFramebuffer(vaDevice.device(), framebuffer, nullptr);
+  vkDestroyRenderPass(vaDevice.device(), renderPass, nullptr);
+}
+
 void ShadowMapRenderSystem::initializeRenderPass() {
   VkAttachmentDescription ad{};
   ad.format = VK_FORMAT_D16_UNORM;
