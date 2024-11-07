@@ -17,8 +17,10 @@ private:
   VkFramebuffer framebuffer;
   VaTexture depthImage;
   VkRenderPass renderPass;
+  std::unique_ptr<VaPipeline> vaPipeline;
 
   void initializeRenderPass();
   void initializeFramebuffer();
+  void initializePipeline();
 };
 } // namespace va

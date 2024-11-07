@@ -92,4 +92,17 @@ void ShadowMapRenderSystem::initializeFramebuffer() {
   }
 }
 
+void ShadowMapRenderSystem::initializePipeline() {
+  PipelineConfigInfo configInfo{};
+  VaPipeline::setDefaultPipelineConfigInfo(configInfo);
+  configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+  configInfo.rasterizationInfo.depthBiasEnable = VK_TRUE;
+  configInfo.rasterizationInfo.depthBiasConstantFactor = 1.25f;
+  configInfo.rasterizationInfo.depthBiasSlopeFactor = 1.75f;
+  configInfo.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+  configInfo.renderPass = renderPass;
+  vaPipeline = std::make_unique<VaPipeline>(
+      vaDevice, "./shaders/shadow.vert.spv", configInfo);
+}
+
 } // namespace va

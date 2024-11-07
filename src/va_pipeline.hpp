@@ -1,8 +1,8 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
 #include "va_engine_device.hpp"
 
@@ -14,7 +14,6 @@ struct PipelineConfigInfo {
 
   PipelineConfigInfo(PipelineConfigInfo &&) = delete;
   PipelineConfigInfo &operator=(const PipelineConfigInfo &&other) = delete;
-
 
   std::vector<VkVertexInputBindingDescription> bindingDescriptions{};
   std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
@@ -55,9 +54,10 @@ public:
 private:
   static std::vector<char> readFile(const std::string &filePath);
 
-  void createGraphicsPipeline(const std::optional<std::string> vertexShaderFilePath,
-                              const std::optional<std::string> fragmentShaderFilePath,
-                              const PipelineConfigInfo &configInfo);
+  void createGraphicsPipeline(
+      const std::optional<std::string> vertexShaderFilePath,
+      const std::optional<std::string> fragmentShaderFilePath,
+      const PipelineConfigInfo &configInfo);
 
   VaDevice &vaDevice;
 
