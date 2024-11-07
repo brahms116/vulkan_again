@@ -1,7 +1,6 @@
 #include "va_texture.hpp"
 #include "va_buffer.hpp"
 
-#include <iostream>
 #include <stdexcept>
 #include <vulkan/vulkan_core.h>
 

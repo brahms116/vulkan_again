@@ -40,6 +40,8 @@ public:
   VaTexture(VaDevice &vaDevice, const CreateImageProperties &properties);
   VaTexture(VaDevice &vaDevice, const std::string &filePath);
 
+  VkImageView getImageView() const { return imageView; }
+
 private:
   VaDevice &vaDevice;
   VkImage image;
