@@ -93,12 +93,26 @@ void ShadowMapRenderSystem::initializeFramebuffer() {
 }
 
 void ShadowMapRenderSystem::initializePipeline() {
+  VkPushConstantRange pushConstantRange{};
+  pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  pushConstantRange.offset = 0;
+  pushConstantRange.size = sizeof(PushConstantData);
+
+  // TODO: pass in the descriptor set layout
+
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  pipelineLayoutInfo.pushConstantRangeCount = 1;
+  pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
+  if (vkCreatePipelineLayout(vaDevice.device(), &pipelineLayoutInfo, nullptr,
+                             &pipelineLayout) != VK_SUCCESS) {
+    throw std::runtime_error("Failed to create pipeline layout");
+  }
 
   PipelineConfigInfo configInfo{};
   VaPipeline::setDefaultPipelineConfigInfo(configInfo);
+  configInfo.pipelineLayout = pipelineLayout;
   configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
   configInfo.rasterizationInfo.depthBiasEnable = VK_TRUE;
   configInfo.rasterizationInfo.depthBiasConstantFactor = 1.25f;
@@ -139,9 +153,8 @@ void ShadowMapRenderSystem::renderShadowMap(
   vkCmdSetScissor(commandBuffer, 0, 1, &scisscor);
   vaPipeline->bindCommandBuffer(commandBuffer);
 
-
   // Render each game object
-  
+
   // End the render pass
 }
 
