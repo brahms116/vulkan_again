@@ -93,6 +93,10 @@ void ShadowMapRenderSystem::initializeFramebuffer() {
 }
 
 void ShadowMapRenderSystem::initializePipeline() {
+  VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+  pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+
+
   PipelineConfigInfo configInfo{};
   VaPipeline::setDefaultPipelineConfigInfo(configInfo);
   configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
@@ -103,6 +107,42 @@ void ShadowMapRenderSystem::initializePipeline() {
   configInfo.renderPass = renderPass;
   vaPipeline = std::make_unique<VaPipeline>(
       vaDevice, "./shaders/shadow.vert.spv", configInfo);
+}
+
+void ShadowMapRenderSystem::renderShadowMap(
+    VkCommandBuffer commandBuffer,
+    const std::vector<VaGameObject> &gameObjects) {
+
+  VkRenderPassBeginInfo renderPassBeginInfo{};
+  renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  renderPassBeginInfo.renderPass = renderPass;
+  renderPassBeginInfo.framebuffer = framebuffer;
+  renderPassBeginInfo.renderArea.extent = shadowMapExtent;
+
+  std::array<VkClearValue, 1> clearValues{{1.0f, 0}};
+  renderPassBeginInfo.clearValueCount =
+      static_cast<uint32_t>(clearValues.size());
+  renderPassBeginInfo.pClearValues = clearValues.data();
+
+  vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo,
+                       VK_SUBPASS_CONTENTS_INLINE);
+
+  VkViewport viewport = {};
+  viewport.x = 0.0f;
+  viewport.y = 0.0f;
+  viewport.width = static_cast<float>(shadowMapExtent.width);
+  viewport.height = static_cast<float>(shadowMapExtent.height);
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+  VkRect2D scisscor{{0, 0}, shadowMapExtent};
+  vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+  vkCmdSetScissor(commandBuffer, 0, 1, &scisscor);
+  vaPipeline->bindCommandBuffer(commandBuffer);
+
+
+  // Render each game object
+  
+  // End the render pass
 }
 
 } // namespace va
