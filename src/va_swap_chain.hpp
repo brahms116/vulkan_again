@@ -101,12 +101,6 @@ private:
   // render, we asscoiate a Fence to it.
   std::vector<VkFence> inFlightFences;
 
-  // This is a map of image index -> VkFence, when we aquire an image from the
-  // swap chain, we need to wait for the appropiate fence associated with
-  // image index of this image. This is set by `inFlightFences` at the current
-  // frame each time a frame is sent to be rendered.
-  std::vector<VkFence> imagesInFlight;
-
   size_t currentFrame = 0;
 };
 
