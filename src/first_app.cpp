@@ -18,8 +18,9 @@ FirstApp::FirstApp() {
   globalPool = VaDescriptorPool::Builder(vaDevice)
                    .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                 VaSwapChain::MAX_FRAMES_IN_FLIGHT)
-                   .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2)
-                   .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT + 2)
+                   .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                VaSwapChain::MAX_FRAMES_IN_FLIGHT + 2)
+                   .setMaxSets(VaSwapChain::MAX_FRAMES_IN_FLIGHT * 2 + 2)
                    .build();
 }
 
@@ -111,7 +112,6 @@ void FirstApp::run() {
       VaSwapChain::MAX_FRAMES_IN_FLIGHT);
 
   for (int i = 0; i < globalDescriptorSets.size(); i++) {
-
     auto bufferInfo = uniformBuffers[i]->descriptorInfo();
     VaDescriptorWriter(*globalDescriptorSetLayout, *globalPool)
         .writeBuffer(0, &bufferInfo)
