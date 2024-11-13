@@ -21,6 +21,8 @@ layout(set=0, binding=0) uniform GlobalUbo {
   int numLights;
 } ubo;
 
+layout(set=0, binding=1) uniform sampler2D shadowMapSampler;
+
 layout(set=1, binding=0) uniform sampler2D texSampler;
 
 layout(push_constant) uniform Push {
@@ -61,5 +63,5 @@ void main() {
   }
 
   vec4 netLight = vec4((specularLight + diffuseLight), 1.0);
-  outColor = netLight * texture(texSampler, fragTexCoord); 
+  outColor = netLight * texture(shadowMapSampler, fragTexCoord); 
 }
