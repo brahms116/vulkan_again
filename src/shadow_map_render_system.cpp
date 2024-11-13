@@ -176,4 +176,10 @@ void ShadowMapRenderSystem::renderShadowMap(
   // End the render pass
 }
 
+VkDescriptorImageInfo
+ShadowMapRenderSystem::descriptorInfo(int frameIndex) const {
+  return depthImages[frameIndex]->descriptorInfo(
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL);
+}
+
 } // namespace va

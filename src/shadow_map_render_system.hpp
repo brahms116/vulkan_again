@@ -19,6 +19,8 @@ public:
                        const std::vector<VaGameObject> &gameObjects,
                        int frameIndex);
 
+  VkDescriptorImageInfo descriptorInfo(int frameIndex) const;
+
 private:
   VkExtent2D shadowMapExtent;
   VaDevice &vaDevice;

@@ -179,8 +179,12 @@ void VaTexture::initializeImage(const CreateImageProperties &properties) {
 }
 
 VkDescriptorImageInfo VaTexture::descriptorInfo() const {
+  return descriptorInfo(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
+VkDescriptorImageInfo VaTexture::descriptorInfo(VkImageLayout layout) const {
   VkDescriptorImageInfo info{};
-  info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+  info.imageLayout = layout;
   info.imageView = imageView;
   info.sampler = sampler;
   return info;
