@@ -1,4 +1,5 @@
 #include "shadow_map_render_system.hpp"
+#include "va_swap_chain.hpp"
 #include <array>
 #include <stdexcept>
 
@@ -6,21 +7,35 @@ namespace va {
 
 ShadowMapRenderSystem::ShadowMapRenderSystem(VaDevice &vaDevice,
                                              VkExtent2D shadowMapExtent)
-    : vaDevice(vaDevice), shadowMapExtent(shadowMapExtent),
-      depthImage(vaDevice, VaTexture::CreateImageProperties{
-                               shadowMapExtent.width, shadowMapExtent.height,
-                               VK_FORMAT_D16_UNORM, VK_IMAGE_TILING_OPTIMAL,
-                               VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
-                                   VK_IMAGE_USAGE_SAMPLED_BIT,
-                               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                               VK_IMAGE_ASPECT_DEPTH_BIT}) {
+    : vaDevice(vaDevice), shadowMapExtent(shadowMapExtent) {
+  initializeDepthImages();
   initializeRenderPass();
-  initializeFramebuffer();
+  initializeFramebuffers();
 }
 
 ShadowMapRenderSystem::~ShadowMapRenderSystem() {
-  vkDestroyFramebuffer(vaDevice.device(), framebuffer, nullptr);
+  for (auto framebuffer : framebuffers) {
+    vkDestroyFramebuffer(vaDevice.device(), framebuffer, nullptr);
+  }
   vkDestroyRenderPass(vaDevice.device(), renderPass, nullptr);
+}
+
+void ShadowMapRenderSystem::initializeDepthImages() {
+  auto createImageProperties = VaTexture::CreateImageProperties{
+      shadowMapExtent.width,
+      shadowMapExtent.height,
+      VK_FORMAT_D16_UNORM,
+      VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+      VK_IMAGE_ASPECT_DEPTH_BIT};
+
+  depthImages.resize(VaSwapChain::MAX_FRAMES_IN_FLIGHT);
+
+  for (int i = 0; i < VaSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+    depthImages[i] =
+        std::make_unique<VaTexture>(vaDevice, createImageProperties);
+  }
 }
 
 void ShadowMapRenderSystem::initializeRenderPass() {
@@ -75,20 +90,23 @@ void ShadowMapRenderSystem::initializeRenderPass() {
   }
 }
 
-void ShadowMapRenderSystem::initializeFramebuffer() {
-  auto imageView = depthImage.getImageView();
-  VkFramebufferCreateInfo fbi{};
-  fbi.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-  fbi.renderPass = renderPass;
-  fbi.attachmentCount = 1;
-  fbi.pAttachments = &imageView;
-  fbi.width = shadowMapExtent.width;
-  fbi.height = shadowMapExtent.height;
-  fbi.layers = 1;
+void ShadowMapRenderSystem::initializeFramebuffers() {
+  framebuffers.resize(VaSwapChain::MAX_FRAMES_IN_FLIGHT);
+  for (int i = 0; i < VaSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+    auto imageView = depthImages[i]->getImageView();
+    VkFramebufferCreateInfo fbi{};
+    fbi.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    fbi.renderPass = renderPass;
+    fbi.attachmentCount = 1;
+    fbi.pAttachments = &imageView;
+    fbi.width = shadowMapExtent.width;
+    fbi.height = shadowMapExtent.height;
+    fbi.layers = 1;
 
-  if (vkCreateFramebuffer(vaDevice.device(), &fbi, nullptr, &framebuffer) !=
-      VK_SUCCESS) {
-    throw std::runtime_error("Failed to create framebuffer");
+    if (vkCreateFramebuffer(vaDevice.device(), &fbi, nullptr,
+                            &framebuffers[i]) != VK_SUCCESS) {
+      throw std::runtime_error("Failed to create framebuffer");
+    }
   }
 }
 
@@ -124,13 +142,13 @@ void ShadowMapRenderSystem::initializePipeline() {
 }
 
 void ShadowMapRenderSystem::renderShadowMap(
-    VkCommandBuffer commandBuffer,
-    const std::vector<VaGameObject> &gameObjects) {
+    VkCommandBuffer commandBuffer, const std::vector<VaGameObject> &gameObjects,
+    int frameIndex) {
 
   VkRenderPassBeginInfo renderPassBeginInfo{};
   renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassBeginInfo.renderPass = renderPass;
-  renderPassBeginInfo.framebuffer = framebuffer;
+  renderPassBeginInfo.framebuffer = framebuffers[frameIndex];
   renderPassBeginInfo.renderArea.extent = shadowMapExtent;
 
   std::array<VkClearValue, 1> clearValues{{1.0f, 0}};

@@ -1,4 +1,3 @@
-
 #include "va_engine_device.hpp"
 #include "va_game_object.hpp"
 #include "va_pipeline.hpp"
@@ -17,21 +16,22 @@ public:
   ~ShadowMapRenderSystem();
 
   void renderShadowMap(VkCommandBuffer commandBuffer,
-                       const std::vector<VaGameObject> &gameObjects
-
-  );
+                       const std::vector<VaGameObject> &gameObjects,
+                       int frameIndex);
 
 private:
   VkExtent2D shadowMapExtent;
   VaDevice &vaDevice;
-  VkFramebuffer framebuffer;
-  VaTexture depthImage;
   VkRenderPass renderPass;
   std::unique_ptr<VaPipeline> vaPipeline;
   VkPipelineLayout pipelineLayout;
 
+  std::vector<std::unique_ptr<VaTexture>> depthImages;
+  std::vector<VkFramebuffer> framebuffers;
+
+  void initializeDepthImages();
   void initializeRenderPass();
-  void initializeFramebuffer();
+  void initializeFramebuffers();
   void initializePipeline();
 };
 } // namespace va

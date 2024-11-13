@@ -23,8 +23,6 @@ public:
   VaTexture(const VaTexture &) = delete;
   VaTexture &operator=(const VaTexture &) = delete;
 
-  VaTexture(VaTexture &&other) = default;
-
   static std::unique_ptr<VaTexture> fromFilePath(VaDevice &vaDevice,
                                                  const std::string &filePath);
 
