@@ -169,6 +169,7 @@ void FirstApp::run() {
       uniformBuffers[frameIndex]->flush();
 
       // Render
+      shadowRenderSystem.renderShadowMap(commandBuffer, gameObjects, frameIndex);
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(frameInfo);
       pointLightRenderSystem.render(frameInfo);

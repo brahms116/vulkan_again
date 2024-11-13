@@ -16,8 +16,7 @@ public:
   ~ShadowMapRenderSystem();
 
   void renderShadowMap(VkCommandBuffer commandBuffer,
-                       const std::vector<VaGameObject> &gameObjects,
-                       int frameIndex);
+                       const VaGameObject::Map &gameObjects, int frameIndex);
 
   VkDescriptorImageInfo descriptorInfo(int frameIndex) const;
 

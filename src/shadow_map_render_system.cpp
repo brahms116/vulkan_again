@@ -11,6 +11,7 @@ ShadowMapRenderSystem::ShadowMapRenderSystem(VaDevice &vaDevice,
   initializeDepthImages();
   initializeRenderPass();
   initializeFramebuffers();
+  initializePipeline();
 }
 
 ShadowMapRenderSystem::~ShadowMapRenderSystem() {
@@ -142,7 +143,7 @@ void ShadowMapRenderSystem::initializePipeline() {
 }
 
 void ShadowMapRenderSystem::renderShadowMap(
-    VkCommandBuffer commandBuffer, const std::vector<VaGameObject> &gameObjects,
+    VkCommandBuffer commandBuffer, const VaGameObject::Map &gameObjects,
     int frameIndex) {
 
   VkRenderPassBeginInfo renderPassBeginInfo{};
@@ -174,6 +175,7 @@ void ShadowMapRenderSystem::renderShadowMap(
   // Render each game object
 
   // End the render pass
+  vkCmdEndRenderPass(commandBuffer);
 }
 
 VkDescriptorImageInfo
