@@ -38,8 +38,6 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo) {
                             1, &object.model->textureDescriptor, 0, nullptr);
 
     SimplePushConstantData push{};
-    /* object.transform.scale.x = */
-    /*     3.0 + fmod((object.transform.scale.x + 0.01f), 1); */
     auto modelTransform = object.transform.mat4();
     push.modelMatrix = modelTransform;
     push.normalMatrix = object.transform.normalMatrix();

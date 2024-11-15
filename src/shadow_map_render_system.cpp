@@ -154,7 +154,8 @@ void ShadowMapRenderSystem::renderShadowMap(
   renderPassBeginInfo.framebuffer = framebuffers[frameIndex];
   renderPassBeginInfo.renderArea.extent = shadowMapExtent;
 
-  std::array<VkClearValue, 1> clearValues{{1.0f, 0}};
+  std::array<VkClearValue, 1> clearValues;
+  clearValues[0].depthStencil = {1.0f, 0};
   renderPassBeginInfo.clearValueCount =
       static_cast<uint32_t>(clearValues.size());
   renderPassBeginInfo.pClearValues = clearValues.data();
