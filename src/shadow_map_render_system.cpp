@@ -19,6 +19,7 @@ ShadowMapRenderSystem::~ShadowMapRenderSystem() {
     vkDestroyFramebuffer(vaDevice.device(), framebuffer, nullptr);
   }
   vkDestroyRenderPass(vaDevice.device(), renderPass, nullptr);
+  vkDestroyPipelineLayout(vaDevice.device(), pipelineLayout, nullptr);
 }
 
 void ShadowMapRenderSystem::initializeDepthImages() {
@@ -138,6 +139,7 @@ void ShadowMapRenderSystem::initializePipeline() {
   configInfo.rasterizationInfo.depthBiasSlopeFactor = 1.75f;
   configInfo.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
   configInfo.renderPass = renderPass;
+  configInfo.useDeviceMsaaSamples = false;
   vaPipeline = std::make_unique<VaPipeline>(
       vaDevice, "./shaders/shadow.vert.spv", configInfo);
 }

@@ -28,7 +28,7 @@ struct PipelineConfigInfo {
   VkPipelineLayout pipelineLayout = nullptr;
   VkRenderPass renderPass = nullptr;
   uint32_t subpass = 0;
-
+  bool useDeviceMsaaSamples = true; 
   std::vector<VkDynamicState> dynamicStateEnables;
   VkPipelineDynamicStateCreateInfo dynamicStateInfo;
 };
@@ -65,7 +65,7 @@ private:
                           VkShaderModule *shaderModule);
 
   VkPipeline graphicsPipeline;
-  VkShaderModule vertShaderModule;
-  VkShaderModule fragShaderModule;
+  VkShaderModule vertShaderModule = VK_NULL_HANDLE;
+  VkShaderModule fragShaderModule = VK_NULL_HANDLE;
 };
 } // namespace va

@@ -25,8 +25,12 @@ VaPipeline::VaPipeline(VaDevice &device,
 }
 
 VaPipeline::~VaPipeline() {
-  vkDestroyShaderModule(vaDevice.device(), vertShaderModule, nullptr);
-  vkDestroyShaderModule(vaDevice.device(), fragShaderModule, nullptr);
+  if (vertShaderModule != VK_NULL_HANDLE) {
+    vkDestroyShaderModule(vaDevice.device(), vertShaderModule, nullptr);
+  }
+  if (fragShaderModule != VK_NULL_HANDLE) {
+    vkDestroyShaderModule(vaDevice.device(), fragShaderModule, nullptr);
+  }
   vkDestroyPipeline(vaDevice.device(), graphicsPipeline, nullptr);
 }
 
@@ -99,7 +103,9 @@ void VaPipeline::createGraphicsPipeline(
   };
 
   auto multisampleInfo = configInfo.multisampleInfo;
-  multisampleInfo.rasterizationSamples = vaDevice.msaaSampleCount;
+  if (configInfo.useDeviceMsaaSamples) {
+    multisampleInfo.rasterizationSamples = vaDevice.msaaSampleCount;
+  }
 
   VkGraphicsPipelineCreateInfo pipelineInfo{
       .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
