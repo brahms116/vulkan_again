@@ -5,13 +5,14 @@
 
 namespace va {
 
-ShadowMapRenderSystem::ShadowMapRenderSystem(VaDevice &vaDevice,
-                                             VkExtent2D shadowMapExtent)
+ShadowMapRenderSystem::ShadowMapRenderSystem(
+    VaDevice &vaDevice, VkExtent2D shadowMapExtent,
+    VkDescriptorSetLayout globalSetLayout)
     : vaDevice(vaDevice), shadowMapExtent(shadowMapExtent) {
   initializeDepthImages();
   initializeRenderPass();
   initializeFramebuffers();
-  initializePipeline();
+  initializePipeline(globalSetLayout);
 }
 
 ShadowMapRenderSystem::~ShadowMapRenderSystem() {
@@ -112,7 +113,8 @@ void ShadowMapRenderSystem::initializeFramebuffers() {
   }
 }
 
-void ShadowMapRenderSystem::initializePipeline() {
+void ShadowMapRenderSystem::initializePipeline(
+    VkDescriptorSetLayout globalSetLayout) {
   VkPushConstantRange pushConstantRange{};
   pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   pushConstantRange.offset = 0;
@@ -176,6 +178,21 @@ void ShadowMapRenderSystem::renderShadowMap(
   vaPipeline->bindCommandBuffer(commandBuffer);
 
   // Render each game object
+  for (auto &kv : gameObjects) {
+    auto &object = kv.second;
+    if (object.model == nullptr)
+      continue;
+
+    PushConstantData push{};
+    auto modelTransform = object.transform.mat4();
+    push.modelMatrix = modelTransform;
+    vkCmdPushConstants(commandBuffer, pipelineLayout,
+                       VK_SHADER_STAGE_VERTEX_BIT,
+                       0, sizeof(PushConstantData), &push);
+
+    object.model->bindCommandBuffer(commandBuffer);
+    object.model->draw(commandBuffer);
+  }
 
   // End the render pass
   vkCmdEndRenderPass(commandBuffer);

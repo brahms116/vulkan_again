@@ -85,9 +85,8 @@ void FirstApp::run() {
   loadGameObjects(defaultTextureDescriptorSet, floorTextureDescriptorSet);
 
   ShadowMapRenderSystem shadowRenderSystem{
-      vaDevice,
-      vaRenderer.getSwapChainExtent(),
-  };
+      vaDevice, vaRenderer.getSwapChainExtent(),
+      globalDescriptorSetLayout->getDescriptorSetLayout()};
 
   SimpleRenderSystem simpleRenderSystem{
       vaDevice, vaRenderer.getSwapChainRenderPass(),
@@ -169,7 +168,8 @@ void FirstApp::run() {
       uniformBuffers[frameIndex]->flush();
 
       // Render
-      shadowRenderSystem.renderShadowMap(commandBuffer, gameObjects, frameIndex);
+      shadowRenderSystem.renderShadowMap(commandBuffer, gameObjects,
+                                         frameIndex);
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(frameInfo);
       pointLightRenderSystem.render(frameInfo);

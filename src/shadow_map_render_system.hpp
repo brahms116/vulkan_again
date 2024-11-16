@@ -11,7 +11,8 @@ class ShadowMapRenderSystem {
   };
 
 public:
-  ShadowMapRenderSystem(VaDevice &vaDevice, VkExtent2D shadowMapExtent);
+  ShadowMapRenderSystem(VaDevice &vaDevice, VkExtent2D shadowMapExtent,
+                        VkDescriptorSetLayout globalSetLayout);
 
   ~ShadowMapRenderSystem();
 
@@ -33,6 +34,6 @@ private:
   void initializeDepthImages();
   void initializeRenderPass();
   void initializeFramebuffers();
-  void initializePipeline();
+  void initializePipeline(VkDescriptorSetLayout globalSetLayout);
 };
 } // namespace va

@@ -18,6 +18,8 @@ struct PointLight {
 struct GlobalUbo {
   glm::mat4 projectionMatrix{1.f};
   glm::mat4 viewMatrix{1.f};
+  glm::mat4 lightProjectionMatrix{1.f};
+  glm::mat4 lightViewMatrix{1.f};
   glm::mat4 inverseViewMatrix{1.f};
   glm::vec4 ambientColor{1.f, 1.f, 1.f, .15f};
   PointLight pointLights[MAX_NUM_LIGHTS];
