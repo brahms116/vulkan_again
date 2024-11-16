@@ -37,7 +37,7 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
 
   auto thing = VaGameObject::create();
   thing.model = cubeModel;
-  thing.transform.translation = {-.5f, .5f, 0.f};
+  thing.transform.translation = {0.f, 0.5f, 0.f};
   thing.transform.scale = glm::vec3(3.f);
   gameObjects.emplace(thing.getId(), std::move(thing));
 
@@ -124,6 +124,9 @@ void FirstApp::run() {
   VaCamera camera{};
   auto cameraEmpty = VaGameObject::create();
   cameraEmpty.transform.translation.z = -2.5f;
+
+  VaCamera lightCamera{};
+
   auto currentTime = std::chrono::high_resolution_clock::now();
 
   KeyboardMovementController inputController{};
@@ -138,13 +141,26 @@ void FirstApp::run() {
     dt = std::min(dt, 0.1f);
 
     currentTime = newTime;
+
     auto aspectRatio = vaRenderer.getAspectRatio();
     camera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 100.f);
+    lightCamera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 100.f);
+
     inputController.updateTransformXZ(vaWindow.getGLFWwindow(), cameraEmpty,
                                       dt);
-
     camera.setViewYXZ(cameraEmpty.transform.translation,
                       cameraEmpty.transform.rotation);
+
+    // Loop through all the game objects, find the point light and set its
+    // position as the light camera position then set the target to be the
+    // origin
+    for (auto &kv : gameObjects) {
+      auto &o = kv.second;
+      if (o.pointLightComponent != nullptr) {
+        lightCamera.setViewTarget(o.transform.translation, {0.f, 0.f, 0.f});
+        break;
+      }
+    }
 
     if (auto commandBuffer = vaRenderer.beginFrame()) {
       // Update
@@ -160,6 +176,10 @@ void FirstApp::run() {
       GlobalUbo ubo{};
       ubo.projectionMatrix = camera.getProjection();
       ubo.viewMatrix = camera.getView();
+      /* ubo.projectionMatrix = lightCamera.getProjection(); */
+      /* ubo.viewMatrix = lightCamera.getView(); */
+
+      ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
       ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
 
       pointLightRenderSystem.update(frameInfo, ubo);
