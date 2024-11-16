@@ -47,7 +47,7 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
   floor.transform.scale = glm::vec3(3.f, 1.f, 3.f);
   gameObjects.emplace(floor.getId(), std::move(floor));
 
-  auto pointLight = VaGameObject::makePointLight(.01f, {1.0f, 1.0f, 1.0f, .5f});
+  auto pointLight = VaGameObject::makePointLight(.01f, {1.0f, 1.0f, 1.0f, 1.f});
   pointLight.transform.translation = {-1.f, -1.f, -1.f};
   gameObjects.emplace(pointLight.getId(), std::move(pointLight));
 }
@@ -176,8 +176,8 @@ void FirstApp::run() {
       GlobalUbo ubo{};
       ubo.projectionMatrix = camera.getProjection();
       ubo.viewMatrix = camera.getView();
-      /* ubo.projectionMatrix = lightCamera.getProjection(); */
-      /* ubo.viewMatrix = lightCamera.getView(); */
+      ubo.lightProjectionMatrix = lightCamera.getProjection();
+      ubo.lightViewMatrix = lightCamera.getView();
 
       ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
       ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
