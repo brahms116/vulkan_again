@@ -4,6 +4,7 @@ layout (location = 0) in vec3 fragColor;
 layout (location = 1) in vec3 fragPosition;
 layout (location = 2) in vec3 fragNormal;
 layout (location = 3) in vec2 fragTexCoord;
+layout (location = 4) in vec4 fragShadowCoord;
 
 layout (location = 0) out vec4 outColor;
 
@@ -31,6 +32,15 @@ layout(push_constant) uniform Push {
   mat4 modelMatrix;
   mat4 normalMatrix;
 } push;
+
+bool inShadow(vec4 fragShadowCoord) {
+  vec3 shadowCoord = fragShadowCoord.xyz / fragShadowCoord.w;
+
+  float shadowMapDepth = texture(shadowMapSampler, shadowCoord.xy).r;
+  float fragmentDepth = shadowCoord.z;
+
+  return shadowMapDepth < fragmentDepth;
+}
 
 void main() {
   vec3 surfaceNormal = normalize(fragNormal);
@@ -65,5 +75,9 @@ void main() {
   }
 
   vec4 netLight = vec4((specularLight + diffuseLight), 1.0);
-  outColor = netLight * texture(shadowMapSampler, fragTexCoord); 
+  outColor = netLight * texture(texSampler, fragTexCoord); 
+
+  if (!inShadow(fragShadowCoord)) {
+    outColor = ubo.ambientColor * ubo.ambientColor.w;
+  }
 }
