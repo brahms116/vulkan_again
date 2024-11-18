@@ -2,6 +2,8 @@
 #include "va_game_object.hpp"
 #include "va_pipeline.hpp"
 #include "va_texture.hpp"
+#include "va_frame_info.hpp"
+
 namespace va {
 
 class ShadowMapRenderSystem {
@@ -16,8 +18,7 @@ public:
 
   ~ShadowMapRenderSystem();
 
-  void renderShadowMap(VkCommandBuffer commandBuffer,
-                       const VaGameObject::Map &gameObjects, int frameIndex);
+  void renderShadowMap(FrameInfo frameInfo);
 
   VkDescriptorImageInfo descriptorInfo(int frameIndex) const;
 

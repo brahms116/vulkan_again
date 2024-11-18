@@ -120,12 +120,20 @@ void ShadowMapRenderSystem::initializePipeline(
   pushConstantRange.offset = 0;
   pushConstantRange.size = sizeof(PushConstantData);
 
-  // TODO: pass in the descriptor set layout
+  /* VkPipelineLayoutCreateInfo pipelineLayoutInfo{}; */
+  /* pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+   */
+  /* pipelineLayoutInfo.pushConstantRangeCount = 1; */
+  /* pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange; */
+  /* pipelineLayoutInfo.pSetLayouts = &globalSetLayout; */
+  /* pipelineLayoutInfo.setLayoutCount = 1; */
 
-  VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-  pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipelineLayoutInfo.pushConstantRangeCount = 1;
-  pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+  VkPipelineLayoutCreateInfo pipelineLayoutInfo{
+      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      .setLayoutCount = 1,
+      .pSetLayouts = &globalSetLayout,
+      .pushConstantRangeCount = 1,
+      .pPushConstantRanges = &pushConstantRange};
 
   if (vkCreatePipelineLayout(vaDevice.device(), &pipelineLayoutInfo, nullptr,
                              &pipelineLayout) != VK_SUCCESS) {
@@ -147,13 +155,13 @@ void ShadowMapRenderSystem::initializePipeline(
 }
 
 void ShadowMapRenderSystem::renderShadowMap(
-    VkCommandBuffer commandBuffer, const VaGameObject::Map &gameObjects,
-    int frameIndex) {
+    FrameInfo frameInfo
+) {
 
   VkRenderPassBeginInfo renderPassBeginInfo{};
   renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassBeginInfo.renderPass = renderPass;
-  renderPassBeginInfo.framebuffer = framebuffers[frameIndex];
+  renderPassBeginInfo.framebuffer = framebuffers[frameInfo.frameIndex];
   renderPassBeginInfo.renderArea.extent = shadowMapExtent;
 
   std::array<VkClearValue, 1> clearValues;
@@ -162,8 +170,12 @@ void ShadowMapRenderSystem::renderShadowMap(
       static_cast<uint32_t>(clearValues.size());
   renderPassBeginInfo.pClearValues = clearValues.data();
 
-  vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo,
+  vkCmdBeginRenderPass(frameInfo.commandBuffer, &renderPassBeginInfo,
                        VK_SUBPASS_CONTENTS_INLINE);
+
+  vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipelineLayout, 0, 1, &frameInfo.descriptorSet, 0,
+                          nullptr);
 
   VkViewport viewport = {};
   viewport.x = 0.0f;
@@ -173,12 +185,12 @@ void ShadowMapRenderSystem::renderShadowMap(
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
   VkRect2D scisscor{{0, 0}, shadowMapExtent};
-  vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-  vkCmdSetScissor(commandBuffer, 0, 1, &scisscor);
-  vaPipeline->bindCommandBuffer(commandBuffer);
+  vkCmdSetViewport(frameInfo.commandBuffer, 0, 1, &viewport);
+  vkCmdSetScissor(frameInfo.commandBuffer, 0, 1, &scisscor);
+  vaPipeline->bindCommandBuffer(frameInfo.commandBuffer);
 
   // Render each game object
-  for (auto &kv : gameObjects) {
+  for (auto &kv : frameInfo.gameObjects) {
     auto &object = kv.second;
     if (object.model == nullptr)
       continue;
@@ -186,16 +198,16 @@ void ShadowMapRenderSystem::renderShadowMap(
     PushConstantData push{};
     auto modelTransform = object.transform.mat4();
     push.modelMatrix = modelTransform;
-    vkCmdPushConstants(commandBuffer, pipelineLayout,
-                       VK_SHADER_STAGE_VERTEX_BIT,
-                       0, sizeof(PushConstantData), &push);
+    vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout,
+                       VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData),
+                       &push);
 
-    object.model->bindCommandBuffer(commandBuffer);
-    object.model->draw(commandBuffer);
+    object.model->bindCommandBuffer(frameInfo.commandBuffer);
+    object.model->draw(frameInfo.commandBuffer);
   }
 
   // End the render pass
-  vkCmdEndRenderPass(commandBuffer);
+  vkCmdEndRenderPass(frameInfo.commandBuffer);
 }
 
 VkDescriptorImageInfo
