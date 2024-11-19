@@ -10,7 +10,11 @@
 #include "va_texture.hpp"
 
 #include <chrono>
+#include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 namespace va {
 
@@ -48,7 +52,7 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
   gameObjects.emplace(floor.getId(), std::move(floor));
 
   auto pointLight = VaGameObject::makePointLight(.01f, {1.0f, 1.0f, 1.0f, .5f});
-  pointLight.transform.translation = {-1.5f, -1.f, -1.5f};
+  pointLight.transform.translation = {-4.f, -1.f, 0.f};
   gameObjects.emplace(pointLight.getId(), std::move(pointLight));
 }
 
@@ -85,7 +89,7 @@ void FirstApp::run() {
   loadGameObjects(defaultTextureDescriptorSet, floorTextureDescriptorSet);
 
   ShadowMapRenderSystem shadowRenderSystem{
-      vaDevice, vaRenderer.getSwapChainExtent(),
+      vaDevice, VkExtent2D{1800, 1200},
       globalDescriptorSetLayout->getDescriptorSetLayout()};
 
   SimpleRenderSystem simpleRenderSystem{
@@ -151,6 +155,8 @@ void FirstApp::run() {
     camera.setViewYXZ(cameraEmpty.transform.translation,
                       cameraEmpty.transform.rotation);
 
+    GlobalUbo ubo{};
+
     // Loop through all the game objects, find the point light and set its
     // position as the light camera position then set the target to be the
     // origin
@@ -158,7 +164,10 @@ void FirstApp::run() {
       auto &o = kv.second;
       if (o.pointLightComponent != nullptr) {
         lightCamera.setViewTarget(o.transform.translation, {0.f, 0.f, 0.f});
-        break;
+        ubo.lightProjectionMatrix =
+            glm::perspective(glm::radians(45.0f), 1.0f, 1.0f, 96.f);
+        ubo.lightViewMatrix = glm::lookAt(o.transform.translation,
+                                          {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f});
       }
     }
 
@@ -173,9 +182,9 @@ void FirstApp::run() {
                           globalDescriptorSets[frameIndex],
                           gameObjects};
 
-      GlobalUbo ubo{};
       ubo.projectionMatrix = camera.getProjection();
       ubo.viewMatrix = camera.getView();
+
       ubo.lightProjectionMatrix = lightCamera.getProjection();
       ubo.lightViewMatrix = lightCamera.getView();
 

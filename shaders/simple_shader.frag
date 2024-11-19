@@ -52,7 +52,7 @@ bool inShadow(vec4 shadowCoord) {
   float shadowMapDepth = texture(shadowMapSampler, shadowCoord.st).r;
   float fragmentDepth = shadowCoord.z;
 
-  return shadowCoord.w > 0.0 && shadowMapDepth < fragmentDepth - 0.2;
+  return shadowCoord.w > 0.0 && shadowMapDepth < fragmentDepth;
 }
 
 void main() {
@@ -72,6 +72,7 @@ void main() {
     vec3 directionToLight = light.position.xyz - fragPosition;
     vec3 normalizedDirectionToLight = normalize(directionToLight);
     float attenuation  = 1.0 / dot(directionToLight, directionToLight);
+    attenuation = 1.0;
 
     float cosAngIncidence = max(dot(surfaceNormal, normalizedDirectionToLight), 0);
 
@@ -96,4 +97,5 @@ void main() {
   }
 
   // outColor = vec4(shadowDifference(fragShadowCoord/fragShadowCoord.w) * 10, 0.0, 0.0, 1.0);
+  // outColor = vec4(fragShadowCoord.z/fragShadowCoord.w, 0.0, 0.0, 1.0);
 }

@@ -27,5 +27,5 @@ layout(push_constant) uniform Push {
 
 void main() {
   vec4 positionWorldSpace = push.modelMatrix * vec4(position, 1.0);
-  gl_Position = ubo.lightProjectionMatrix *  (ubo.lightViewMatrix * positionWorldSpace);
+  gl_Position = ubo.lightProjectionMatrix *  ubo.lightViewMatrix * positionWorldSpace;
 }

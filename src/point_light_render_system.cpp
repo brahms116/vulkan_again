@@ -55,8 +55,8 @@ void PointLightRenderSystem::update(FrameInfo &frameInfo, GlobalUbo &ubo) {
     if (o.pointLightComponent == nullptr)
       continue;
 
-    o.transform.translation =
-        glm::vec3(rotateLight * glm::vec4(o.transform.translation, 1.f));
+    /* o.transform.translation = */
+    /*     glm::vec3(rotateLight * glm::vec4(o.transform.translation, 1.f)); */
 
     ubo.pointLights[lightIndex].color = o.pointLightComponent->color;
 
