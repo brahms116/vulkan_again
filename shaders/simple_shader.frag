@@ -33,13 +33,26 @@ layout(push_constant) uniform Push {
   mat4 normalMatrix;
 } push;
 
-bool inShadow(vec4 fragShadowCoord) {
-  vec3 shadowCoord = fragShadowCoord.xyz / fragShadowCoord.w;
+float shadowDifference(vec4 shadowCoord) {
+  if (shadowCoord.z > 1.0 || shadowCoord.z < -1.0) {
+    return 0.0;
+  }
 
-  float shadowMapDepth = texture(shadowMapSampler, shadowCoord.xy).r;
+  float shadowMapDepth = texture(shadowMapSampler, shadowCoord.st).r;
   float fragmentDepth = shadowCoord.z;
 
-  return shadowMapDepth < fragmentDepth;
+  return fragmentDepth - shadowMapDepth;
+}
+
+bool inShadow(vec4 shadowCoord) {
+  if (shadowCoord.z > 1.0 || shadowCoord.z < -1.0) {
+    return false;
+  }
+
+  float shadowMapDepth = texture(shadowMapSampler, shadowCoord.st).r;
+  float fragmentDepth = shadowCoord.z;
+
+  return shadowCoord.w > 0.0 && shadowMapDepth < fragmentDepth - 0.2;
 }
 
 void main() {
@@ -74,11 +87,13 @@ void main() {
     specularLight += light.color.xyz * netSpecularIntensityFactor;
   }
 
-  vec4 netLight = vec4((specularLight + diffuseLight), 1.0);
+  vec4 netLight = vec4((diffuseLight), 1.0);
   outColor = netLight * texture(texSampler, fragTexCoord); 
 
-  if (inShadow(fragShadowCoord)) {
+
+  if (inShadow(fragShadowCoord/fragShadowCoord.w)) {
     outColor = ubo.ambientColor * ubo.ambientColor.w;
   }
 
+  // outColor = vec4(shadowDifference(fragShadowCoord/fragShadowCoord.w) * 10, 0.0, 0.0, 1.0);
 }

@@ -30,15 +30,15 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
                                const VkDescriptorSet floorTextureDescriptor) {
 
   std::shared_ptr<VaModel> cubeModel = VaModel::createModelFromFile(
-      vaDevice, "models/smooth_vase.obj", defaultTextureDescriptor);
+      vaDevice, "models/cube.obj", defaultTextureDescriptor);
 
   std::shared_ptr<VaModel> floorModel = VaModel::createModelFromFile(
       vaDevice, "models/quad.obj", floorTextureDescriptor);
 
   auto thing = VaGameObject::create();
   thing.model = cubeModel;
-  thing.transform.translation = {0.f, 0.5f, 0.f};
-  thing.transform.scale = glm::vec3(3.f);
+  thing.transform.translation = {0.f, 0.f, 0.f};
+  thing.transform.scale = glm::vec3(0.5f);
   gameObjects.emplace(thing.getId(), std::move(thing));
 
   auto floor = VaGameObject::create();
@@ -47,8 +47,8 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
   floor.transform.scale = glm::vec3(3.f, 1.f, 3.f);
   gameObjects.emplace(floor.getId(), std::move(floor));
 
-  auto pointLight = VaGameObject::makePointLight(.01f, {1.0f, 1.0f, 1.0f, 1.f});
-  pointLight.transform.translation = {-1.f, -1.f, -1.f};
+  auto pointLight = VaGameObject::makePointLight(.01f, {1.0f, 1.0f, 1.0f, .5f});
+  pointLight.transform.translation = {-1.5f, -1.f, -1.5f};
   gameObjects.emplace(pointLight.getId(), std::move(pointLight));
 }
 
@@ -144,7 +144,7 @@ void FirstApp::run() {
 
     auto aspectRatio = vaRenderer.getAspectRatio();
     camera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 100.f);
-    lightCamera.setPerspectiveProjection(1.4f, aspectRatio, 0.1f, 100.f);
+    lightCamera.setPerspectiveProjection(45.f, aspectRatio, 1.1f, 100.f);
 
     inputController.updateTransformXZ(vaWindow.getGLFWwindow(), cameraEmpty,
                                       dt);
