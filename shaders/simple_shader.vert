@@ -51,5 +51,5 @@ void main() {
   fragColor = color;
   fragTexCoord = uv;
 
-  vec4 outShadowCoord = (biasMatrix * ubo.lightProjectionMatrix * ubo.lightViewMatrix) * positionWorldSpace;
+  outShadowCoord = (biasMatrix * ubo.lightProjectionMatrix * ubo.lightViewMatrix) * positionWorldSpace;
 }

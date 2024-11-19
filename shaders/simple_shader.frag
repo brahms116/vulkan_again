@@ -77,7 +77,8 @@ void main() {
   vec4 netLight = vec4((specularLight + diffuseLight), 1.0);
   outColor = netLight * texture(texSampler, fragTexCoord); 
 
-  if (!inShadow(fragShadowCoord)) {
+  if (inShadow(fragShadowCoord)) {
     outColor = ubo.ambientColor * ubo.ambientColor.w;
   }
+
 }
