@@ -44,8 +44,8 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
 
   auto thing = VaGameObject::create();
   thing.model = cubeModel;
-  thing.transform.translation = {0.f, -.5f, 0.f};
-  thing.transform.scale = glm::vec3(1.f);
+  thing.transform.translation = {0.5f, 0.f, 0.f};
+  thing.transform.scale = glm::vec3(0.5f);
   gameObjects.emplace(thing.getId(), std::move(thing));
 
   auto vase = VaGameObject::create();
@@ -53,6 +53,12 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
   vase.transform.translation = {3.f, 0.5f, 2.5f};
   vase.transform.scale = glm::vec3(8.f);
   gameObjects.emplace(vase.getId(), std::move(vase));
+
+  auto vase1 = VaGameObject::create();
+  vase1.model = vaseModel;
+  vase1.transform.translation = {4.2f, .5f, 1.15f};
+  vase1.transform.scale = glm::vec3(6.f);
+  gameObjects.emplace(vase1.getId(), std::move(vase1));
 
   auto floor = VaGameObject::create();
   floor.model = floorModel;

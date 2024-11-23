@@ -94,5 +94,6 @@ void main() {
 
   if (inShadow(fragShadowCoord/fragShadowCoord.w)) {
     outColor = vec4(ubo.ambientColor.xyz * ubo.ambientColor.w, 1.0) * texture(texSampler, fragTexCoord);
+    //outColor = vec4(0.0, 1.0, 0.0, 1.0);
   }
 }
