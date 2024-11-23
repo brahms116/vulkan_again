@@ -52,7 +52,7 @@ bool inShadow(vec4 shadowCoord) {
   float shadowMapDepth = texture(shadowMapSampler, shadowCoord.st).r;
   float fragmentDepth = shadowCoord.z;
 
-  return shadowCoord.w > 0.0 && shadowMapDepth < fragmentDepth;
+  return shadowMapDepth < fragmentDepth;
 }
 
 void main() {
@@ -93,9 +93,6 @@ void main() {
 
 
   if (inShadow(fragShadowCoord/fragShadowCoord.w)) {
-    outColor = ubo.ambientColor * ubo.ambientColor.w;
+    outColor = vec4(ubo.ambientColor.xyz * ubo.ambientColor.w, 1.0) * texture(texSampler, fragTexCoord);
   }
-
-  // outColor = vec4(shadowDifference(fragShadowCoord/fragShadowCoord.w) * 10, 0.0, 0.0, 1.0);
-  // outColor = vec4(fragShadowCoord.z/fragShadowCoord.w, 0.0, 0.0, 1.0);
 }

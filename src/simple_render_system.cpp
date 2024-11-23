@@ -30,6 +30,10 @@ void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo) {
 
     auto &object = kv.second;
 
+    if(!object.isQuad) {
+      /* continue; */
+    }
+
     if (object.model == nullptr)
       continue;
 

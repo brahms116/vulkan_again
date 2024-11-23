@@ -36,23 +36,33 @@ void FirstApp::loadGameObjects(const VkDescriptorSet defaultTextureDescriptor,
   std::shared_ptr<VaModel> cubeModel = VaModel::createModelFromFile(
       vaDevice, "models/cube.obj", defaultTextureDescriptor);
 
+  std::shared_ptr<VaModel> vaseModel = VaModel::createModelFromFile(
+      vaDevice, "models/smooth_vase.obj", defaultTextureDescriptor);
+
   std::shared_ptr<VaModel> floorModel = VaModel::createModelFromFile(
       vaDevice, "models/quad.obj", floorTextureDescriptor);
 
   auto thing = VaGameObject::create();
   thing.model = cubeModel;
-  thing.transform.translation = {0.f, 0.f, 0.f};
-  thing.transform.scale = glm::vec3(0.5f);
+  thing.transform.translation = {0.f, -.5f, 0.f};
+  thing.transform.scale = glm::vec3(1.f);
   gameObjects.emplace(thing.getId(), std::move(thing));
+
+  auto vase = VaGameObject::create();
+  vase.model = vaseModel;
+  vase.transform.translation = {3.f, 0.5f, 2.5f};
+  vase.transform.scale = glm::vec3(8.f);
+  gameObjects.emplace(vase.getId(), std::move(vase));
 
   auto floor = VaGameObject::create();
   floor.model = floorModel;
   floor.transform.translation = {0.f, 0.5f, 0.f};
-  floor.transform.scale = glm::vec3(3.f, 1.f, 3.f);
+  floor.transform.scale = glm::vec3(10.f, 1.f, 10.f);
+  floor.isQuad = true;
   gameObjects.emplace(floor.getId(), std::move(floor));
 
   auto pointLight = VaGameObject::makePointLight(.01f, {1.0f, 1.0f, 1.0f, .5f});
-  pointLight.transform.translation = {-4.f, -1.f, 0.f};
+  pointLight.transform.translation = {35.f, -10.0f, 0.f};
   gameObjects.emplace(pointLight.getId(), std::move(pointLight));
 }
 
@@ -89,7 +99,7 @@ void FirstApp::run() {
   loadGameObjects(defaultTextureDescriptorSet, floorTextureDescriptorSet);
 
   ShadowMapRenderSystem shadowRenderSystem{
-      vaDevice, VkExtent2D{1800, 1200},
+      vaDevice, VkExtent2D{2400, 1800},
       globalDescriptorSetLayout->getDescriptorSetLayout()};
 
   SimpleRenderSystem simpleRenderSystem{
@@ -164,6 +174,7 @@ void FirstApp::run() {
       auto &o = kv.second;
       if (o.pointLightComponent != nullptr) {
         lightCamera.setViewTarget(o.transform.translation, {0.f, 0.f, 0.f});
+
         ubo.lightProjectionMatrix =
             glm::perspective(glm::radians(45.0f), 1.0f, 1.0f, 96.f);
         ubo.lightViewMatrix = glm::lookAt(o.transform.translation,
@@ -184,9 +195,11 @@ void FirstApp::run() {
 
       ubo.projectionMatrix = camera.getProjection();
       ubo.viewMatrix = camera.getView();
+      /* ubo.projectionMatrix = ubo.lightProjectionMatrix; */
+      /* ubo.viewMatrix = ubo.lightViewMatrix; */
 
-      ubo.lightProjectionMatrix = lightCamera.getProjection();
-      ubo.lightViewMatrix = lightCamera.getView();
+      /* ubo.lightProjectionMatrix = lightCamera.getProjection(); */
+      /* ubo.lightViewMatrix = lightCamera.getView(); */
 
       ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
       ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
@@ -201,7 +214,7 @@ void FirstApp::run() {
 
       vaRenderer.beginSwapChainRenderPass(commandBuffer);
       simpleRenderSystem.renderGameObjects(frameInfo);
-      pointLightRenderSystem.render(frameInfo);
+      /* pointLightRenderSystem.render(frameInfo); */
       vaRenderer.endSwapChainRenderPass(commandBuffer);
       vaRenderer.endFrame();
     };

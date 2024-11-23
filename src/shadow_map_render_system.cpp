@@ -143,9 +143,10 @@ void ShadowMapRenderSystem::initializePipeline(
   PipelineConfigInfo configInfo{};
   VaPipeline::setDefaultPipelineConfigInfo(configInfo);
   configInfo.pipelineLayout = pipelineLayout;
-  configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+  configInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
   configInfo.rasterizationInfo.depthBiasEnable = VK_TRUE;
-  configInfo.rasterizationInfo.depthBiasConstantFactor = 1.25f;
+  configInfo.rasterizationInfo.depthBiasConstantFactor = 0.25f;
+  configInfo.rasterizationInfo.depthBiasClamp = 0.0f;
   configInfo.rasterizationInfo.depthBiasSlopeFactor = 1.75f;
   configInfo.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
   configInfo.renderPass = renderPass;

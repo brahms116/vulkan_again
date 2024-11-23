@@ -48,6 +48,8 @@ public:
   std::shared_ptr<const VaModel> model{};
   std::unique_ptr<const PointLightComponent> pointLightComponent = nullptr;
 
+  bool isQuad = false;
+
 private:
   id_t id;
   VaGameObject(id_t objId) : id{objId} {}

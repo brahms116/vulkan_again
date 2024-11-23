@@ -35,8 +35,8 @@ layout(push_constant) uniform Push {
 const mat4 biasMatrix = mat4(
   0.5, 0.0, 0.0, 0.0,
   0.0, 0.5, 0.0, 0.0,
-  0.0, 0.0, 0.5, 0.0,
-  0.5, 0.5, 0.5, 1.0
+  0.0, 0.0, 1.0, 0.0,
+  0.5, 0.5, 0.0, 1.0
 );
 
 void main() {
