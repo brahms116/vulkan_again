@@ -181,10 +181,10 @@ void FirstApp::run() {
       if (o.pointLightComponent != nullptr) {
         lightCamera.setViewTarget(o.transform.translation, {0.f, 0.f, 0.f});
 
-        ubo.lightProjectionMatrix =
-            glm::perspective(glm::radians(45.0f), 1.0f, 1.0f, 96.f);
-        ubo.lightViewMatrix = glm::lookAt(o.transform.translation,
-                                          {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f});
+        /* ubo.lightProjectionMatrix = */
+        /*     glm::perspective(glm::radians(45.0f), 1.0f, 1.0f, 96.f); */
+        /* ubo.lightViewMatrix = glm::lookAt(o.transform.translation, */
+        /*                                   {0.f, 0.f, 0.f}, {0.f, 1.f, 0.f}); */
       }
     }
 
@@ -201,11 +201,9 @@ void FirstApp::run() {
 
       ubo.projectionMatrix = camera.getProjection();
       ubo.viewMatrix = camera.getView();
-      /* ubo.projectionMatrix = ubo.lightProjectionMatrix; */
-      /* ubo.viewMatrix = ubo.lightViewMatrix; */
 
-      /* ubo.lightProjectionMatrix = lightCamera.getProjection(); */
-      /* ubo.lightViewMatrix = lightCamera.getView(); */
+      ubo.lightProjectionMatrix = lightCamera.getProjection();
+      ubo.lightViewMatrix = lightCamera.getView();
 
       ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
       ubo.inverseViewMatrix = cameraEmpty.transform.mat4();
